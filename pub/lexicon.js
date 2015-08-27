@@ -9,5 +9,11 @@ exports.globalLexicon = {
     "true" : { "tk": 0x14, "cls": "val", "length": 0 },
     "false" : { "tk": 0x14, "cls": "val", "length": 0 },
     "add" : { "tk": 0x01, "name": "ADD", "cls": "function", "length": 2 , "arity": 2 },    
-    "style" : { "tk": 0x01, "name": "STYLE", "cls": "function", "length": 2, "arity": 2 },    
+    "style" : { "tk": 0x01, "name": "STYLE", "cls": "function", "length": 2, "arity": 2 },
+    "data" : { "tk": 0x01, "name": "DATA", "cls": "function", "length": 1 , "arity": 1 },
+    "width" : { "tk": 0x01, "name": "WIDTH", "cls": "function", "length": 2, "arity": 2},
+    "height" : { "tk": 0x01, "name": "HEIGHT", "cls": "function", "length": 2, "arity": 2},
+    "horizontal" : { "tk": 0x01, "name": "HOR", "cls": "function", "length": 1, "arity": 1},
+    "vertical" : { "tk": 0x01, "name": "VER", "cls": "function", "length": 1, "arity": 1},
+    "icicle" : { "tk": 0x01, "name": "ICICLE", "cls": "function", "length": 1, "arity": 1},    
 }
