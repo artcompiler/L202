@@ -234,6 +234,7 @@ let translate = (function() {
               val.orientation = (val.orientation ? val.orientation : 'vertical');
               val.style = (val.style ? val.style : []);
               val.graphtype = 'icicle';
+              val.color = (val.color ? val.color : 'Pastel1')
               resume([].concat(err), val);
             });
           }).on('error', function(e) {
@@ -345,7 +346,7 @@ let translate = (function() {
     "ICICLE" : icicle,
     "SUNBURST" : sunburst,
     "LABELS" : labels,
-    //"COLOR" : color,
+    "COLOR" : color,
     "ZOOM" : zoom,
   }
   return translate;
