@@ -80,7 +80,7 @@ let translate = (function() {
               err2 = err2.concat(error("Argument must be a positive number.", node.elts[1]));
             }
             if(typeof val === "object" && val){
-              val[params.prop] = val2;
+              val[params.prop] = +val2;
             }
             resume([].concat(err).concat(err2), val);
           });

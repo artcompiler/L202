@@ -367,7 +367,43 @@ window.exports.viewer = (function () {
           .attr("height", function(d) { return y(d[loc[3]]); })
           .attr("fill", function(d) { return color((d.children ? d : d.parent).key); })
           .attr("stroke", '#fff');
-          //.on("click", clicked);
+        if(graphs[counter].zoom){
+          rect.on("click", clicked);
+          var height = graphs[counter].height;
+          var width = graphs[counter].width;
+          var test = graphs[counter].orientation;
+          function clicked(d){
+            if(test === "vertical"){
+              var xd = x.domain([d.x, d.x + d.dx]),
+                  yd = y.domain([d.y, 1]).range([d.y ? 20 : 0, height]);
+            } else if(test === "horizontal"){
+              var xd = x.domain([d.y, 1]).range([d.y ? 20 : 0, width]),
+                  yd = y.domain([d.x, d.x + d.dx]);              
+            }
+            
+//if vertical we want this because it maps the width of the selected to the x domain
+//if horizontal we want to map height instead.
+            if(text){
+              text.transition().attr("opacity", 0);
+            }
+
+            rect.transition()
+                .duration(750)
+                .attr("x", function(d) { return xd(d[loc[0]]); })
+                .attr("y", function(d) { return yd(d[loc[1]]); })
+                .attr("width", function(d) { return xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]); })
+                .attr("height", function(d) { return yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]); })
+                .each("end", function(e, i) {
+                  if(e.x >= d.x && e.x < (d.x + d.dx)) {
+                    var arcText = d3.select(this.parentNode).select("text");
+                    arcText.transition().duration(750)
+                      .attr("opacity", 1)
+                      .attr("transform", function(d) { return "translate(" + (xd(d[loc[0]]) + (xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]))/2) + "," + (yd(d[loc[1]]) + (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]))/2) + loc[6]; })
+                      .style("font-size", function(d) { return ((xd(d[loc[2]]) < 6) ? 10 : 10)+"px";})
+                  }
+                });
+          }
+        }
         if(graphs[counter].labelling){
           var text = svg.append("text")
             .attr("dy", ".35em")
@@ -396,6 +432,32 @@ window.exports.viewer = (function () {
           .attr("d", arc)
           .attr("stroke", '#fff')
           .style("fill", function(d) { return color((d.children ? d : d.parent).key); });
+        /*if(graphs[counter].zoom){
+          path.on("click", click);
+          function click(d) {
+            text.transition().attr("opacity", 0);
+
+            path.transition()
+              .duration(750)
+              .attrTween("d", function(d){
+                var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
+                    yd = d3.interpolate(y.domain(), [d.y, 1]),
+                    yr = d3.interpolate(y.range(), [d.y ? 20 : 0, radius]);
+                return function(d, i){
+                  return i ? function(t) { return arc(d); } : function(t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); return arc(d); };
+                };
+              })
+              .each("end", function(e, i){//when the transition ends
+                if(e.x >= d.x && e.x < (d.x + d.dx)) {//grab all the text
+                  var arcText = d3.select(this.parentNode).select("text");
+                  arcText.transition().duration(750)
+                    .attr("opacity", 1)
+                    .attr("transform", function() { return "rotate(" + ((x(d.x + d.dx / 2) - Math.PI / 2) / Math.PI * 180) + ")";})
+                    .attr("x", function(d) { return y(d.y); });
+                }
+              });
+          }
+        }*/
         if(graphs[counter].labelling){
           var text = svg.append("text")
             .attr("transform", function(d) { return "rotate(" + ((x(d.x + d.dx / 2) - Math.PI / 2) / Math.PI * 180) + ")";})
@@ -418,14 +480,6 @@ window.exports.viewer = (function () {
     var mySVG = $(el).html();
     return mySVG;
   }
-  /*function clicked(d) {
-    x.domain([d.x, d.x + d.dx]);//see if you need to flip this for horizontal
-    y.domain([d.y, 1]).range([d.y ? 20 : 0, height]);
-
-    rect.transition()
-      .duration(750)
-      .attr("x", function(d) { return x(d.x);})
-  }*/
   return {
     update: update,
     capture: capture,
