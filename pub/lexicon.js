@@ -15,5 +15,9 @@ exports.globalLexicon = {
     "height" : { "tk": 0x01, "name": "HEIGHT", "cls": "function", "length": 2, "arity": 2},
     "horizontal" : { "tk": 0x01, "name": "HOR", "cls": "function", "length": 1, "arity": 1},
     "vertical" : { "tk": 0x01, "name": "VER", "cls": "function", "length": 1, "arity": 1},
-    "icicle" : { "tk": 0x01, "name": "ICICLE", "cls": "function", "length": 1, "arity": 1},    
+    "icicle" : { "tk": 0x01, "name": "ICICLE", "cls": "function", "length": 1, "arity": 1},
+    "sunburst" : { "tk": 0x01, "name": "SUNBURST", "cls": "function", "length": 1, "arity": 1},
+    "labels" : { "tk": 0x01, "name": "LABELS", "cls": "function", "length": 1, "arity": 1},
+    "color" : { "tk": 0x01, "name": "COLOR", "cls": "function", "length": 2, "arity": 2},
+    "zoom" : { "tk": 0x01, "name": "ZOOM", "cls": "function", "length": 1, "arity": 1},    
 }
