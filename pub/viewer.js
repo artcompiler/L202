@@ -73,6 +73,7 @@ window.exports.viewer = (function () {
           var height = graphs[counter].height;
           var width = graphs[counter].width;
           var test = graphs[counter].orientation;
+          var sty = graphs[counter].style;
           function clicked(d){
             if(test === "vertical"){
               var xd = x.domain([d.x, d.x + d.dx]),
@@ -100,9 +101,8 @@ window.exports.viewer = (function () {
                   if(e.x >= d.x && e.x < (d.x + d.dx)) {
                     var arcText = d3.select(this.parentNode).select("text");
                     arcText.transition().duration(750)
-                      .attr("opacity", 1)
-                      .attr("transform", function(d) { return "translate(" + (xd(d[loc[0]]) + (xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]))/2) + "," + (yd(d[loc[1]]) + (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]))/2) + loc[6]; })
-                      .style("font-size", function(d) { return ((textch(d) < 6) ? 0 : 10)+"px";})
+                      .attr("opacity", function(d) {return ((textch(d) < 6) ? 0 : 1);})
+                      .attr("transform", function(d) { return "translate(" + (xd(d[loc[0]]) + (xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]))/2) + "," + (yd(d[loc[1]]) + (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]))/2) + loc[6]; });
                   }
                 });
           }
@@ -113,7 +113,8 @@ window.exports.viewer = (function () {
             .attr("transform", function(d) { return "translate(" + (x(d[loc[0]]) + x(d[loc[2]]) / 2) + "," + (ypos + y(d[loc[1]]) + y(d[loc[3]]) / 2) + loc[6]; })
             .text(function(d) { return d.key })
             .style("text-anchor", 'middle')
-            .style("font-size", function(d) { return ((textcheck(d) < 6) ? 0 : 10)+"px";})
+            .attr("opacity", function(d) {return ((textcheck(d) < 6) ? 0 : 1);})
+            .style("font-size", 10+"px")
             .call(styles, graphs[counter].style);
         }
       } else if(graphs[counter].graphtype === "sunburst"){
