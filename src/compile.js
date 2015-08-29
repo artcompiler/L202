@@ -487,10 +487,11 @@ let translate = (function() {
   }
   function color(node, options, resume) {//takes in array (colorbrewer or not) of hex values and the data object
     visit(node.elts[1], options, function (err2, val2) {
-      if(!(val2[0] instanceof Array)){
+      console.log(val2);
+      if(!(val2 instanceof Array)){
         err2 = err2.concat(error("Please provide an array or brewer color.", node.elts[1]));
       } else {
-        val2[0].forEach(function (element, index, array){//check that it's all hex values
+        val2.forEach(function (element, index, array){//check that it's all hex values
           if(typeof element !== "string" || !(/^#[0-9A-F]{6}$/i.test(element))){//not string or not hex
             err2 = err2.concat(error("Index " + index + " is not a valid hex string.", node.elts[1]));
           }
@@ -500,7 +501,7 @@ let translate = (function() {
       let params = {
         op: "default",
         prop: "color",
-        val: val2[0]
+        val: val2
       };
       set(node, options, function (err1, val1) {
         resume([].concat(err1).concat(err2), val1);
@@ -518,7 +519,7 @@ let translate = (function() {
       } else {
         ret = colorbrewer[colors[val]][9];
       }
-      resume([].concat(err), [ret]);//finds the right name and then grabs the colorbrewer array
+      resume([].concat(err), ret);//finds the right name and then grabs the colorbrewer array
     });
   }
   function rgb(node, options, resume){//takes in rgb outputs hex
