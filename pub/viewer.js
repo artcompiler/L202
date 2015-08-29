@@ -323,7 +323,6 @@ window.exports.viewer = (function () {
         graphs = graphs.concat(element);
       }
     });
-    //just make one work for now.
     //partition looks for children arrays starting from root and positions and scales based on number of children and their values.
     var svgd = d3.select(el)
     svgd.selectAll("g")
@@ -342,8 +341,10 @@ window.exports.viewer = (function () {
       var root = graphs[counter].tree;
       if(graphs[counter].orientation === "vertical"){
         var loc = ['x', 'y', 'dx', 'dy', 'width', 'height', ")rotate(90)"];
+        var textcheck = function(d) { return x(d[loc[2]]); };
       } else if(graphs[counter].orientation === "horizontal"){
         var loc = ['y', 'x', 'dy', 'dx', 'height', 'width', ")"];
+        var textcheck = function(d) { return y(d[loc[3]]); };
       }
 
       var partition = d3.layout.partition()
@@ -375,10 +376,12 @@ window.exports.viewer = (function () {
           function clicked(d){
             if(test === "vertical"){
               var xd = x.domain([d.x, d.x + d.dx]),
-                  yd = y.domain([d.y, 1]).range([d.y ? 20 : 0, height]);
+                  yd = y.domain([d.y, 1]).range([d.y ? 20 : 0, height]),
+                  textch = function(d){ return xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]); };//return width
             } else if(test === "horizontal"){
               var xd = x.domain([d.y, 1]).range([d.y ? 20 : 0, width]),
-                  yd = y.domain([d.x, d.x + d.dx]);              
+                  yd = y.domain([d.x, d.x + d.dx]),
+                  textch = function(d) { return yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]); };//return height              
             }
             
 //if vertical we want this because it maps the width of the selected to the x domain
@@ -399,7 +402,7 @@ window.exports.viewer = (function () {
                     arcText.transition().duration(750)
                       .attr("opacity", 1)
                       .attr("transform", function(d) { return "translate(" + (xd(d[loc[0]]) + (xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]))/2) + "," + (yd(d[loc[1]]) + (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]))/2) + loc[6]; })
-                      .style("font-size", function(d) { return ((xd(d[loc[2]]) < 6) ? 10 : 10)+"px";})
+                      .style("font-size", function(d) { return ((textch(d) < 6) ? 0 : 10)+"px";})
                   }
                 });
           }
@@ -410,7 +413,7 @@ window.exports.viewer = (function () {
             .attr("transform", function(d) { return "translate(" + (x(d[loc[0]]) + x(d[loc[2]]) / 2) + "," + (ypos + y(d[loc[1]]) + y(d[loc[3]]) / 2) + loc[6]; })
             .text(function(d) { return d.key })
             .style("text-anchor", 'middle')
-            .style("font-size", function(d) { return ((x(d.dx) < 6) ? 0 : 10)+"px";})
+            .style("font-size", function(d) { return ((textcheck(d) < 6) ? 0 : 10)+"px";})
             .call(styles, graphs[counter].style);
         }
       } else if(graphs[counter].graphtype === "sunburst"){
@@ -421,7 +424,7 @@ window.exports.viewer = (function () {
         var y = d3.scale.sqrt()
           .range([0, radius]);
         svg
-          .attr("transform", "translate(" + graphs[counter].width/2 + "," + (graphs[counter].height/2 + 10) + ")");
+          .attr("transform", "translate(" + graphs[counter].width/2 + "," + (graphs[counter].height/2 + 10) + ")rotate("+ graphs[counter].rotation +")");
         var arc = d3.svg.arc()
           .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x))); })
           .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx))); })

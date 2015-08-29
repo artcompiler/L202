@@ -208,12 +208,6 @@ let translate = (function() {
         err = err.concat(error("Argument Data invalid.", node.elts[0]));
       } else {//have to make sure it's an object before you start assigning properties.
         if(typeof val.tree === "string"){
-          /*var obj = JSON.parse(fs.readFileSync('readme.json', 'utf8'));
-          if (obj.error && obj.error.length > 0) {
-            err = err.concat(error("Attempt to check URL returned" + obj.error, node.elts[0]));
-          } else {
-            val.tree = obj;
-          }*/
           https.get(val.tree, function(res) {
             var obj = '';
 
@@ -259,9 +253,25 @@ let translate = (function() {
   function sunburst(node, options, resume){
     icicle(node, options, function (err, val){
       val.graphtype = 'sunburst';//just overwrite this
+      val.rotation = (val.rotation ? val.rotation : 0);
       resume([].concat(err), val);
     });
   }
+  function rotate(node, options, resume) {
+    visit(node.elts[1], options, function (err2, val2) {
+      if(isNaN(val2)){
+        err2 = err2.concat(error("Argument must be a number.", node.elts[1]));
+      }
+      let params = {
+        op: "default",
+        prop: "rotation",
+        val: +val2
+      };
+      set(node, options, function (err1, val1) {
+        resume([].concat(err1).concat(err2), val1);
+      }, params)
+    });
+  };
   function style(node, options, resume) {
     visit(node.elts[1], options, function (err2, val2) {
       let params = {
@@ -348,6 +358,7 @@ let translate = (function() {
     "LABELS" : labels,
     "COLOR" : color,
     "ZOOM" : zoom,
+    "ROTATE" : rotate,
   }
   return translate;
 })();

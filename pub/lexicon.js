@@ -19,5 +19,6 @@ exports.globalLexicon = {
     "sunburst" : { "tk": 0x01, "name": "SUNBURST", "cls": "function", "length": 1, "arity": 1},
     "labels" : { "tk": 0x01, "name": "LABELS", "cls": "function", "length": 1, "arity": 1},
     "color" : { "tk": 0x01, "name": "COLOR", "cls": "function", "length": 2, "arity": 2},
-    "zoom" : { "tk": 0x01, "name": "ZOOM", "cls": "function", "length": 1, "arity": 1},    
+    "zoom" : { "tk": 0x01, "name": "ZOOM", "cls": "function", "length": 1, "arity": 1},
+    "rotate" : { "tk": 0x01, "name": "ROTATE", "cls": "function", "length": 2, "arity": 2},    
 }
