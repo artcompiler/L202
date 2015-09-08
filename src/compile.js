@@ -393,10 +393,20 @@ let translate = (function() {
   }
   function data(node, options, resume) {
     visit(node.elts[0], options, function (err, val) {
+    	var ret = {
+    		tree: val,
+    		height: 500,
+    		width: 960,
+    		orientation: 'vertical',
+    		style: [],
+    		color: colorbrewer['Pastel1'][9],
+    		graphtype: 'icicle',
+    		rotation: 0
+    	};
       if(typeof val !== "string" && (typeof val !== "object" || !val)){
         err = err.concat(error("Data must be an object or URL.", node.elts[0]));
       }
-      resume([].concat(err), {tree: val});
+      resume([].concat(err), ret);
     })
   }
   function width(node, options, resume) {
@@ -487,7 +497,6 @@ let translate = (function() {
   }
   function color(node, options, resume) {//takes in array (colorbrewer or not) of hex values and the data object
     visit(node.elts[1], options, function (err2, val2) {
-      console.log(val2);
       if(!(val2 instanceof Array)){
         err2 = err2.concat(error("Please provide an array or brewer color.", node.elts[1]));
       } else {
@@ -565,29 +574,20 @@ let translate = (function() {
               val.tree = fin;
               if(fin){
                 if (fin.error && fin.error.length > 0) {
-                  err = err.concat(error("Attempt to parse JSON returned" + fin.error), node.elts[0]);
+                  err = err.concat(error("Attempt to parse JSON returned" + fin.error, node.elts[0]));
                 }
               }
-              val.height = (val.height ? val.height : 500);
-              val.width = (val.width ? val.width : 960);
-              val.orientation = (val.orientation ? val.orientation : 'vertical');
-              val.style = (val.style ? val.style : []);
               val.graphtype = 'icicle';
-              val.color = (val.color ? val.color : 'Pastel1')
               resume([].concat(err), val);
             });
           }).on('error', function(e) {
-            err = err.concat(error("Attempt to get data returned" + e), node.elts[0]);
+            err = err.concat(error("Attempt to get data returned" + e, node.elts[0]));
             resume([].concat(err), val);
           });
         } else {
           if(typeof val.tree !== "object") {
             err = err.concat(error("Data is not a tree.", node.elts[0]));
           } else {
-            val.height = (val.height ? val.height : 500);
-            val.width = (val.width ? val.width : 960);
-            val.orientation = (val.orientation ? val.orientation : 'vertical');
-            val.style = (val.style ? val.style : []);
             val.graphtype = 'icicle';
           }
           resume([].concat(err), val);
@@ -598,7 +598,6 @@ let translate = (function() {
   function sunburst(node, options, resume){
     icicle(node, options, function (err, val){
       val.graphtype = 'sunburst';//just overwrite this
-      val.rotation = (val.rotation ? val.rotation : 0);
       resume([].concat(err), val);
     });
   }
@@ -629,38 +628,12 @@ let translate = (function() {
       }, params)
     });
   };
-  function list(node, options, resume) {
-    if (node.elts && node.elts.length) {
-      visit(node.elts[0], options, function (err1, val1) {
-        node.elts.shift();
-        list(node, options, function (err2, val2) {
-          val2.unshift(val1);
-          resume([].concat(err1).concat(err2), val2);
-        });
-      });
-    } else {
-      resume([], []);
-    }
-  };
   function binding(node, options, resume) {
     visit(node.elts[0], options, function (err1, val1) {
       visit(node.elts[1], options, function (err2, val2) {
         resume([].concat(err1).concat(err2), {key: val1, val: val2});
       });
     });
-  };
-  function record(node, options, resume) {
-    if (node.elts && node.elts.length) {
-      visit(node.elts[0], options, function (err1, val1) {
-        node.elts.shift();
-        record(node, options, function (err2, val2) {
-          val2.unshift(val1);
-          resume([].concat(err1).concat(err2), val2);
-        });
-      });
-    } else {
-      resume([], []);
-    }
   };
   function exprs(node, options, resume) {
     if (node.elts && node.elts.length) {
@@ -688,8 +661,8 @@ let translate = (function() {
     "NUM": num,
     "IDENT": ident,
     "BOOL": bool,
-    "LIST": list,
-    "RECORD": record,
+    "LIST": exprs,
+    "RECORD": exprs,
     "BINDING": binding,
     "ADD" : add,
     "STYLE" : style,

@@ -20,7 +20,7 @@ window.exports.viewer = (function () {
     }
     obj.data.forEach(function (element, index, array) {
       if (typeof element === "object" && element.tree && typeof element.tree === "object") {
-        graphs = graphs.concat(element);
+        graphs = element;
       }
     });
     //partition looks for children arrays starting from root and positions and scales based on number of children and their values.
@@ -35,155 +35,151 @@ window.exports.viewer = (function () {
     }
     var ypos = 0;
     var xpos = 0;
-    for(var counter = 0; counter < graphs.length; counter++){
-      var color = d3.scale.ordinal()
-        .range(graphs[counter].color);//when I'm done this should be an array itself
-      var root = graphs[counter].tree;
-      if(graphs[counter].orientation === "vertical"){
-        var loc = ['x', 'y', 'dx', 'dy', 'width', 'height', ")rotate(90)"];
-        var textcheck = function(d) { return x(d[loc[2]]); };
-      } else if(graphs[counter].orientation === "horizontal"){
-        var loc = ['y', 'x', 'dy', 'dx', 'height', 'width', ")"];
-        var textcheck = function(d) { return y(d[loc[3]]); };
-      }
+    var color = d3.scale.ordinal()
+      .range(graphs.color);
+    var root = graphs.tree;
+    if(graphs.orientation === "vertical"){
+      var loc = ['x', 'y', 'dx', 'dy', 'width', 'height', ")rotate(90)"];
+      var textcheck = function(d) { return x(d[loc[2]]); };
+    } else if(graphs.orientation === "horizontal"){
+      var loc = ['y', 'x', 'dy', 'dx', 'height', 'width', ")"];
+      var textcheck = function(d) { return y(d[loc[3]]); };
+    }
 
-      var partition = d3.layout.partition()
-        .children(function(d) { return isNaN(d.value) ? d3.entries(d.value) : null; })
-        .value(function(d) { return d.value; });//or it breaks sunburst (and probably ruins rect) or takes two calls
+    var partition = d3.layout.partition()
+      .children(function(d) { return isNaN(d.value) ? d3.entries(d.value) : null; })
+      .value(function(d) { return d.value; });//or it breaks sunburst (and probably ruins rect) or takes two calls
 
-      var nodes = partition(d3.entries(root)[0]);
-      var svg = svgd.selectAll("g")
-        .data(nodes)
-        .enter().append("g");//let's try something new.
-      if(graphs[counter].graphtype === "icicle"){
-        var x = d3.scale.linear()
-          .range([0, graphs[counter].width]);
-        var y = d3.scale.linear()
-          .range([0, graphs[counter].height]);
+    var nodes = partition(d3.entries(root)[0]);
+    var svg = svgd.selectAll("g")
+      .data(nodes)
+      .enter().append("g");//let's try something new.
+    if(graphs.graphtype === "icicle"){
+      var x = d3.scale.linear()
+        .range([0, graphs.width]);
+      var y = d3.scale.linear()
+        .range([0, graphs.height]);
 
-        var rect = svg.append("rect")//this creates a rectangle for every piece of data the partition feels relevant.
-          .attr("x", function(d) { return x(d[loc[0]]); })
-          .attr("y", function(d) { return y(d[loc[1]]) + ypos; })
-          .attr("width", function(d) { return x(d[loc[2]]); })
-          .attr("height", function(d) { return y(d[loc[3]]); })
-          .attr("fill", function(d) { return color((d.children ? d : d.parent).key); })
-          .attr("stroke", '#fff');
-        if(graphs[counter].zoom){
-          rect.on("click", clicked);
-          var height = graphs[counter].height;
-          var width = graphs[counter].width;
-          var test = graphs[counter].orientation;
-          var sty = graphs[counter].style;
-          function clicked(d){
-            if(test === "vertical"){
-              var xd = x.domain([d.x, d.x + d.dx]),
-                  yd = y.domain([d.y, 1]).range([d.y ? 20 : 0, height]),
-                  textch = function(d){ return xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]); };//return width
-            } else if(test === "horizontal"){
-              var xd = x.domain([d.y, 1]).range([d.y ? 20 : 0, width]),
-                  yd = y.domain([d.x, d.x + d.dx]),
-                  textch = function(d) { return yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]); };//return height              
-            }
-            
+      var rect = svg.append("rect")//this creates a rectangle for every piece of data the partition feels relevant.
+        .attr("x", function(d) { return x(d[loc[0]]); })
+        .attr("y", function(d) { return y(d[loc[1]]) + ypos; })
+        .attr("width", function(d) { return x(d[loc[2]]); })
+        .attr("height", function(d) { return y(d[loc[3]]); })
+        .attr("fill", function(d) { return color((d.children ? d : d.parent).key); })
+        .attr("stroke", '#fff');
+      if(graphs.zoom){
+        rect.on("click", clicked);
+        var height = graphs.height;
+        var width = graphs.width;
+        var test = graphs.orientation;
+        var sty = graphs.style;
+        function clicked(d){
+          if(test === "vertical"){
+            var xd = x.domain([d.x, d.x + d.dx]),
+                yd = y.domain([d.y, 1]).range([d.y ? 20 : 0, height]),
+                textch = function(d){ return xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]); };//return width
+          } else if(test === "horizontal"){
+            var xd = x.domain([d.y, 1]).range([d.y ? 20 : 0, width]),
+                yd = y.domain([d.x, d.x + d.dx]),
+                textch = function(d) { return yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]); };//return height              
+          }
+          
 //if vertical we want this because it maps the width of the selected to the x domain
 //if horizontal we want to map height instead.
-            if(text){
-              text.transition().attr("opacity", 0);
-            }
-
-            rect.transition()
-                .duration(750)
-                .attr("x", function(d) { return xd(d[loc[0]]); })
-                .attr("y", function(d) { return yd(d[loc[1]]); })
-                .attr("width", function(d) { return xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]); })
-                .attr("height", function(d) { return yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]); })
-                .each("end", function(e, i) {
-                  if(e.x >= d.x && e.x < (d.x + d.dx)) {
-                    var arcText = d3.select(this.parentNode).select("text");
-                    arcText.transition().duration(750)
-                      .attr("opacity", function(d) {return ((textch(d) < 6) ? 0 : 1);})
-                      .attr("transform", function(d) { return "translate(" + (xd(d[loc[0]]) + (xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]))/2) + "," + (yd(d[loc[1]]) + (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]))/2) + loc[6]; });
-                  }
-                });
+          if(text){
+            text.transition().attr("opacity", 0);
           }
-        }
-        if(graphs[counter].labelling){
-          var text = svg.append("text")
-            .attr("dy", ".35em")
-            .attr("transform", function(d) { return "translate(" + (x(d[loc[0]]) + x(d[loc[2]]) / 2) + "," + (ypos + y(d[loc[1]]) + y(d[loc[3]]) / 2) + loc[6]; })
-            .text(function(d) { return d.key })
-            .style("text-anchor", 'middle')
-            .attr("opacity", function(d) {return ((textcheck(d) < 6) ? 0 : 1);})
-            .style("font-size", 10+"px")
-            .call(styles, graphs[counter].style);
-        }
-      } else if(graphs[counter].graphtype === "sunburst"){
-        //needed differences: scaling, radius, translation to center, arc and path instead of rect
-        var radius = Math.min(graphs[counter].width, graphs[counter].height)/2;
-        var x = d3.scale.linear()
-          .range([0, 2*Math.PI]);
-        var y = d3.scale.sqrt()
-          .range([0, radius]);
-        svg
-          .attr("transform", "translate(" + graphs[counter].width/2 + "," + (graphs[counter].height/2 + 10) + ")rotate("+ graphs[counter].rotation +")");
-        var arc = d3.svg.arc()
-          .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x))); })
-          .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx))); })
-          .innerRadius(function(d) { return Math.max(0, y(d.y)); })
-          .outerRadius(function(d) { return Math.max(0, y(d.y + d.dy)); });
 
-        var path = svg.append("path")
-          .attr("d", arc)
-          .attr("stroke", '#fff')
-          .style("fill", function(d) { return color((d.children ? d : d.parent).key); });
-        if(graphs[counter].zoom){
-          path.on("click", click);
-          function click(d) {
-            if(text){
-              text.transition().attr("opacity", 0);
-            }
-            function tw(d){
-              var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
-                  yd = d3.interpolate(y.domain(), [d.y, 1]),
-                  yr = d3.interpolate(y.range(), [d.y ? 20 : 0, radius]);
-              return function(d, i){
-                return i
-                    ? function (t) { return arc(d); }
-                    : function (t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); return arc(d); };
-              };
-            }
-
-            path.transition()
+          rect.transition()
               .duration(750)
-              .attrTween("d", tw(d))
-              .each("end", function(e, i){//when the transition ends
-                if(e.x >= d.x && e.x < (d.x + d.dx)) {//grab all the text
+              .attr("x", function(d) { return xd(d[loc[0]]); })
+              .attr("y", function(d) { return yd(d[loc[1]]); })
+              .attr("width", function(d) { return xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]); })
+              .attr("height", function(d) { return yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]); })
+              .each("end", function(e, i) {
+                if(e.x >= d.x && e.x < (d.x + d.dx)) {
                   var arcText = d3.select(this.parentNode).select("text");
                   arcText.transition().duration(750)
-                    .attr("opacity", 1)
-                    .attr("transform", function() { return "rotate(" + ((x(e.x + e.dx / 2) - Math.PI / 2) / Math.PI * 180) + ")"})
-                    .attr("x", function(d) { return y(d.y); });
+                    .attr("opacity", function(d) {return ((textch(d) < 6) ? 0 : 1);})
+                    .attr("transform", function(d) { return "translate(" + (xd(d[loc[0]]) + (xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]))/2) + "," + (yd(d[loc[1]]) + (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]))/2) + loc[6]; });
                 }
               });
-          }
-        }
-        if(graphs[counter].labelling){
-          var text = svg.append("text")
-            .attr("transform", function(d) { return "rotate(" + ((x(d.x + d.dx / 2) - Math.PI / 2) / Math.PI * 180) + ")";})
-            .attr("x", function(d) { return y(d.y); })
-            .attr("dx", "6")
-            .attr("dy", ".35em")
-            .text(function(d) { return d.key; })
-            .style("font-size", function(d) { return ((x(d.dx) < 10/(Math.PI * 180)) ? 0 : 12)+"px";})
-            .call(styles, graphs[counter].style);
         }
       }
-      ypos += graphs[counter].height;
-      xpos = (graphs[counter].width > xpos) ? graphs[counter].width : xpos;
+      if(graphs.labelling){
+        var text = svg.append("text")
+          .attr("dy", ".35em")
+          .attr("transform", function(d) { return "translate(" + (x(d[loc[0]]) + x(d[loc[2]]) / 2) + "," + (ypos + y(d[loc[1]]) + y(d[loc[3]]) / 2) + loc[6]; })
+          .text(function(d) { return d.key })
+          .style("text-anchor", 'middle')
+          .attr("opacity", function(d) {return ((textcheck(d) < 6) ? 0 : 1);})
+          .style("font-size", 10+"px")
+          .call(styles, graphs.style);
+      }
+    } else if(graphs.graphtype === "sunburst"){
+      //needed differences: scaling, radius, translation to center, arc and path instead of rect
+      var radius = Math.min(graphs.width, graphs.height)/2;
+      var x = d3.scale.linear()
+        .range([0, 2*Math.PI]);
+      var y = d3.scale.sqrt()
+        .range([0, radius]);
+      svg
+        .attr("transform", "translate(" + graphs.width/2 + "," + (graphs.height/2 + 10) + ")rotate("+ graphs.rotation +")");
+      var arc = d3.svg.arc()
+        .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x))); })
+        .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx))); })
+        .innerRadius(function(d) { return Math.max(0, y(d.y)); })
+        .outerRadius(function(d) { return Math.max(0, y(d.y + d.dy)); });
+
+      var path = svg.append("path")
+        .attr("d", arc)
+        .attr("stroke", '#fff')
+        .style("fill", function(d) { return color((d.children ? d : d.parent).key); });
+      if(graphs.zoom){
+        path.on("click", click);
+        function click(d) {
+          if(text){
+            text.transition().attr("opacity", 0);
+          }
+          function tw(d){
+            var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
+                yd = d3.interpolate(y.domain(), [d.y, 1]),
+                yr = d3.interpolate(y.range(), [d.y ? 20 : 0, radius]);
+            return function(d, i){
+              return i
+                  ? function (t) { return arc(d); }
+                  : function (t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); return arc(d); };
+            };
+          }
+
+          path.transition()
+            .duration(750)
+            .attrTween("d", tw(d))
+            .each("end", function(e, i){//when the transition ends
+              if(e.x >= d.x && e.x < (d.x + d.dx)) {//grab all the text
+                var arcText = d3.select(this.parentNode).select("text");
+                arcText.transition().duration(750)
+                  .attr("opacity", 1)
+                  .attr("transform", function() { return "rotate(" + ((x(e.x + e.dx / 2) - Math.PI / 2) / Math.PI * 180) + ")"})
+                  .attr("x", function(d) { return y(d.y); });
+              }
+            });
+        }
+      }
+      if(graphs.labelling){
+        var text = svg.append("text")
+          .attr("transform", function(d) { return "rotate(" + ((x(d.x + d.dx / 2) - Math.PI / 2) / Math.PI * 180) + ")";})
+          .attr("x", function(d) { return y(d.y); })
+          .attr("dx", "6")
+          .attr("dy", ".35em")
+          .text(function(d) { return d.key; })
+          .style("font-size", function(d) { return ((x(d.dx) < 10/(Math.PI * 180)) ? 0 : 12)+"px";})
+          .call(styles, graphs.style);
+      }
     }
     svgd
-      .attr("width", xpos)
-      .attr("height", ypos);
+      .attr("width", graphs.width)
+      .attr("height", graphs.height);
   }
   function capture(el) {
     var mySVG = $(el).html();
