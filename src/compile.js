@@ -448,14 +448,33 @@ let translate = (function() {
     }, params);
   };
   function labels(node, options, resume) {
-    let params = {
-      op: "default",
-      prop: "labelling",
-      val: true 
-    };
-    set(node, options, function (err, val) {
-      resume([].concat(err), val);
-    }, params);
+  	var lab = [false, false];//labelling[0] is key, labelling [1] is value.
+  	visit(node.elts[1], options, function (err2, val2) {//parameter list
+  		if(typeof val2 === "string"){
+  			val2 = [val2];
+  		}
+  		if(!(val2 instanceof Array)){
+  			err2 = err2.concat(error("Argument be a string parameter or array thereof.", node.elts[1]));
+  		} else {
+  			val2.forEach(function (element, index, array) {
+  				if(element == "name" || element == "key"){
+  					lab[0] = true;
+  				} else if(element == "number" || element == "value"){
+  					lab[1] = true;
+  				} else {
+  					err2 = err2.concat(error(element+" is not a valid label parameter, try name or value.", node.elts[1]));
+  				}
+  			});
+  		}
+	    let params = {
+	      op: "default",
+	      prop: "labelling",
+	      val: lab
+	    };
+	    set(node, options, function (err, val) {//graph
+	      resume([].concat(err), val);
+	    }, params);
+  	});
   };
   function zoom(node, options, resume) {
     let params = {
@@ -498,7 +517,9 @@ let translate = (function() {
   function color(node, options, resume) {//takes in array (colorbrewer or not) of hex values and the data object
     visit(node.elts[1], options, function (err2, val2) {
       if(!(val2 instanceof Array)){
-        err2 = err2.concat(error("Please provide an array or brewer color.", node.elts[1]));
+      	if(typeof val2 === "string" && /^#[0-9A-F]{6}$/i.test(val2)){//valid hex string.
+      		val2 = [val2];//not bothering with not being an array internally any further than this.
+      	} else {err2 = err2.concat(error("Please provide a color, array, or brewer color.", node.elts[1]));}
       } else {
         val2.forEach(function (element, index, array){//check that it's all hex values
           if(typeof element !== "string" || !(/^#[0-9A-F]{6}$/i.test(element))){//not string or not hex

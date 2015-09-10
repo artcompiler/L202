@@ -122,7 +122,12 @@ window.exports.viewer = (function () {
         var text = svg.append("text")
           .attr("dy", ".35em")
           .attr("transform", function(d) { return "translate(" + (x(d[loc[0]]) + x(d[loc[2]]) / 2) + "," + (ypos + y(d[loc[1]]) + y(d[loc[3]]) / 2) + loc[6]; })
-          .text(function(d) { return d.key })
+          .text(function(d) {
+            var lab = '';
+            if(graphs.labelling[0]){lab += d.key+" ";}//space either doesn't matter or helps with value.
+            if(graphs.labelling[1]){lab += d.value;}
+            return lab;
+          })
           .style("text-anchor", 'middle')
           .attr("opacity", function(d) {return ((textcheck(d) < 6) ? 0 : 1);})
           .style("font-size", 10+"px")
@@ -195,7 +200,12 @@ window.exports.viewer = (function () {
           .attr("x", function(d) { return y(d.y); })
           .attr("dx", "6")
           .attr("dy", ".35em")
-          .text(function(d) { return d.key; })
+          .text(function(d) {
+            var lab = '';
+            if(graphs.labelling[0]){lab += d.key+" ";}//space either doesn't matter or helps with value.
+            if(graphs.labelling[1]){lab += d.value;}
+            return lab;
+          })
           .style("font-size", function(d) { return ((x(d.dx) < 10/(Math.PI * 180)) ? 0 : 12)+"px";})
           .call(styles, graphs.style);
       }
