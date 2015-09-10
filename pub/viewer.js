@@ -147,6 +147,17 @@ window.exports.viewer = (function () {
         .attr("d", arc)
         .attr("stroke", '#fff')
         .style("fill", function(d) { return color((d.children ? d : d.parent).key); });
+      if(graphs.leaf){
+        path.style("fill", function(d) {
+          var col = color((d.children ? d : d.parent).key);
+          graphs.leaf.ranges.forEach(function (element, index, array) {//for each range
+            if(+d.value >= +element[0] && +d.value <= +element[1]){//each has two values that give the range.
+               col = graphs.leaf.colors[index];
+            }//matches with the first.
+          });
+          return col;
+        });
+      }
       if(graphs.zoom){
         path.on("click", click);
         function click(d) {
