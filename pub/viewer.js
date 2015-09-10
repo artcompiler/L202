@@ -66,7 +66,7 @@ window.exports.viewer = (function () {
         .attr("width", function(d) { return x(d[loc[2]]); })
         .attr("height", function(d) { return y(d[loc[3]]); })
         .attr("fill", function(d) { return color((d.children ? d : d.parent).key); })
-        .attr("stroke", '#fff');
+        .attr("stroke", graphs.bcolor);
 
       if(graphs.leaf){
         rect.attr("fill", function(d) {

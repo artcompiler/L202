@@ -400,6 +400,7 @@ let translate = (function() {
     		orientation: 'vertical',
     		style: [],
     		color: colorbrewer['Pastel1'][9],
+    		bcolor: '#ffffff',
     		graphtype: 'icicle',
     		rotation: 0
     	};
@@ -538,6 +539,21 @@ let translate = (function() {
       }, params)
     });
   }
+  function bcolor(node, options, resume) {
+  	visit(node.elts[1], options, function (err2, val2) {
+  		if(typeof val2 !== "string" || !(/^#[0-9A-F]{6}$/i.test(val2))){
+  			err2 = err2.concat(error("Argument is not a valid hex string.", node.elts[1]));
+  		}
+  		let params = {
+  			op: "default",
+  			prop: "bcolor",
+  			val: val2
+  		};
+      set(node, options, function (err1, val1) {
+        resume([].concat(err1).concat(err2), val1);
+      }, params)
+  	});
+  };
   function leaf(node, options, resume) {
   	var leaf = {
   		ranges: [],
@@ -734,6 +750,7 @@ let translate = (function() {
     "SUNBURST" : sunburst,
     "LABELS" : labels,
     "COLOR" : color,
+    "BCOLOR" : bcolor,
     "ZOOM" : zoom,
     "ROTATE" : rotate,
     "RGB" : rgb,
