@@ -400,6 +400,8 @@ let translate = (function() {
     		orientation: 'vertical',
     		style: [],
     		color: colorbrewer['Pastel1'][9],
+    		opacity: 1,
+    		bopacity: 1,
     		bcolor: '#ffffff',
     		graphtype: 'icicle',
     		rotation: 0
@@ -592,6 +594,50 @@ let translate = (function() {
   		});
   	});
   };
+  function opacity(node, options, resume) {
+  	visit(node.elts[1], options, function (err2, val2) {
+  		if(isNaN(val2) || val2 < 0){
+  			err2 = err2.concat(error("Alpha must be a positive number.", node.elts[1]));
+  		} else {
+  			val2 = +val2;
+  			if(val2 > 1 && val2 < 100){
+  				val2 = val2/100;
+  			} else if (val2 > 100){
+  				val2 = 1;
+  			}
+  		}
+  		let params = {
+  			op: "default",
+  			prop: "opacity",
+  			val: val2
+  		};
+  		set(node, options, function (err1, val1) {
+  			resume([].concat(err1).concat(err2), val1);
+  		}, params);
+  	});
+  }
+  function bopacity(node, options, resume) {
+  	visit(node.elts[1], options, function (err2, val2) {
+  		if(isNaN(val2) || val2 < 0){
+  			err2 = err2.concat(error("Alpha must be a positive number.", node.elts[1]));
+  		} else {
+  			val2 = +val2;
+  			if(val2 > 1 && val2 < 100){
+  				val2 = val2/100;
+  			} else if (val2 > 100){
+  				val2 = 1;
+  			}
+  		}
+  		let params = {
+  			op: "default",
+  			prop: "bopacity",
+  			val: val2
+  		};
+  		set(node, options, function (err1, val1) {
+  			resume([].concat(err1).concat(err2), val1);
+  		}, params);
+  	});
+  }
   function brewer(node, options, resume) {//takes in color string, outputs array
     let ret = 0;
     visit(node.elts[0], options, function (err, val) {
@@ -756,6 +802,8 @@ let translate = (function() {
     "RGB" : rgb,
     "BREWER" : brewer,
     "LEAF" : leaf,
+    "BOPACITY" : bopacity,
+    "OPACITY" : opacity,
   }
   return translate;
 })();

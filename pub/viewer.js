@@ -66,7 +66,9 @@ window.exports.viewer = (function () {
         .attr("width", function(d) { return x(d[loc[2]]); })
         .attr("height", function(d) { return y(d[loc[3]]); })
         .attr("fill", function(d) { return color((d.children ? d : d.parent).key); })
-        .attr("stroke", graphs.bcolor);
+        .attr("opacity", graphs.opacity)
+        .attr("stroke", graphs.bcolor)
+        .attr("stroke-opacity", graphs.bopacity);
 
       if(graphs.leaf){
         rect.attr("fill", function(d) {
@@ -150,7 +152,10 @@ window.exports.viewer = (function () {
 
       var path = svg.append("path")
         .attr("d", arc)
-        .attr("stroke", '#fff')
+        .attr("stroke", graphs.bcolor)
+        .attr("opacity", graphs.opacity)
+        .attr("stroke", graphs.bcolor)
+        .attr("stroke-opacity", graphs.bopacity)
         .style("fill", function(d) { return color((d.children ? d : d.parent).key); });
       if(graphs.leaf){
         path.style("fill", function(d) {
