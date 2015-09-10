@@ -48,7 +48,7 @@ window.exports.viewer = (function () {
 
     var partition = d3.layout.partition()
       .children(function(d) { return isNaN(d.value) ? d3.entries(d.value) : null; })
-      .value(function(d) { return d.value; });//or it breaks sunburst (and probably ruins rect) or takes two calls
+      .value(function(d) { return d.value; });
 
     var nodes = partition(d3.entries(root)[0]);
     var svg = svgd.selectAll("g")
@@ -67,6 +67,18 @@ window.exports.viewer = (function () {
         .attr("height", function(d) { return y(d[loc[3]]); })
         .attr("fill", function(d) { return color((d.children ? d : d.parent).key); })
         .attr("stroke", '#fff');
+
+      if(graphs.leaf){
+        rect.attr("fill", function(d) {
+          var col = color((d.children ? d : d.parent).key);
+          graphs.leaf.ranges.forEach(function (element, index, array) {//for each range
+            if(+d.value >= +element[0] && +d.value <= +element[1]){//each has two values that give the range.
+               col = graphs.leaf.colors[index];
+            }//matches with the first.
+          });
+          return col;
+        });
+      }
       if(graphs.zoom){
         rect.on("click", clicked);
         var height = graphs.height;
