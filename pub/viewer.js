@@ -40,16 +40,16 @@ window.exports.viewer = (function () {
     var root = graphs.tree;
     if(graphs.orientation === "vertical"){
       var loc = ['x', 'y', 'dx', 'dy', 'width', 'height', ")rotate(90)"];
-      var textcheck = function(d) { return x(d[loc[2]]); };
     } else if(graphs.orientation === "horizontal"){
       var loc = ['y', 'x', 'dy', 'dx', 'height', 'width', ")"];
-      var textcheck = function(d) { return y(d[loc[3]]); };
     }
+    var textcheck = function(d) {
+      return x(d[loc[2]]) > (d[loc[5]]+2) && y(d[loc[3]]) > (d[loc[4]]+2);
+    };//bar width > bbox width && bar height > bbox height, though in the horizontal case it's in the reverse order.
 
     var partition = d3.layout.partition()
       .children(function(d) { return isNaN(d.value) ? d3.entries(d.value) : null; })
       .value(function(d) { return d.value; });
-
     var nodes = partition(d3.entries(root)[0]);
     var svg = svgd.selectAll("g")
       .data(nodes)
@@ -90,16 +90,14 @@ window.exports.viewer = (function () {
         function clicked(d){
           if(test === "vertical"){
             var xd = x.domain([d.x, d.x + d.dx]),
-                yd = y.domain([d.y, 1]).range([d.y ? 20 : 0, height]),
-                textch = function(d){ return xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]); };//return width
+                yd = y.domain([d.y, 1]).range([d.y ? 20 : 0, height]);
           } else if(test === "horizontal"){
             var xd = x.domain([d.y, 1]).range([d.y ? 20 : 0, width]),
-                yd = y.domain([d.x, d.x + d.dx]),
-                textch = function(d) { return yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]); };//return height              
+                yd = y.domain([d.x, d.x + d.dx]);          
           }
-          
-//if vertical we want this because it maps the width of the selected to the x domain
-//if horizontal we want to map height instead.
+          var textch = function(d) {//text width/height doesn't change from this
+            return (xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]])) > (d[loc[5]]+2) && (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]])) > (d[loc[4]]+2);
+          };
           if(text){
             text.transition().attr("opacity", 0);
           }
@@ -114,7 +112,9 @@ window.exports.viewer = (function () {
                 if(e.x >= d.x && e.x < (d.x + d.dx)) {
                   var arcText = d3.select(this.parentNode).select("text");
                   arcText.transition().duration(750)
-                    .attr("opacity", function(d) {return ((textch(d) < 6) ? 0 : 1);})
+                    .attr("opacity", function(d) {
+                      return textch(d) ? 1 : 0;
+                    })
                     .attr("transform", function(d) { return "translate(" + (xd(d[loc[0]]) + (xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]))/2) + "," + (yd(d[loc[1]]) + (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]))/2) + loc[6]; });
                 }
               });
@@ -131,9 +131,16 @@ window.exports.viewer = (function () {
             return lab;
           })
           .style("text-anchor", 'middle')
-          .attr("opacity", function(d) {return ((textcheck(d) < 6) ? 0 : 1);})
           .style("font-size", 10+"px")
-          .call(styles, graphs.style);
+          .call(styles, graphs.style)
+          .each(function (d) {
+            d.width = this.getBBox().width;
+            d.height = this.getBBox().height;
+          });
+        text
+          .attr("opacity", function (d) {
+            return textcheck(d) ? 1 : 0;//if it's true the box is larger than the text in both directions
+          });
       }
     } else if(graphs.graphtype === "sunburst"){
       //needed differences: scaling, radius, translation to center, arc and path instead of rect
@@ -212,7 +219,11 @@ window.exports.viewer = (function () {
             return lab;
           })
           .style("font-size", function(d) { return ((x(d.dx) < 10/(Math.PI * 180)) ? 0 : 12)+"px";})
-          .call(styles, graphs.style);
+          .call(styles, graphs.style)
+          .each(function (d) {
+            d.width = this.getBBox().width;
+            d.height = this.getBBox().height;
+          });
       }
     }
     svgd
