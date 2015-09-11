@@ -558,6 +558,7 @@ let translate = (function() {
   };
   function leaf(node, options, resume) {
   	var leaf = {
+  		parts: 'all',
   		ranges: [],
   		colors: []
   	};
@@ -583,14 +584,21 @@ let translate = (function() {
 	        });
 	        leaf.colors = leaf.colors.concat(val3);
 	      }
-	  		let params = {
-	  			op: "default",
-	  			prop: "leaf",
-	  			val: leaf
-	  		};
-	  		set(node, options, function (err1, val1) {//graph
-	        resume([].concat(err1).concat(err3).concat(err2), val1);
-	      }, params)
+	      visit(node.elts[3], options, function (err4, val4){//text parameters
+	      	if(val4 === 'leaves' || val4 === 'leaf' || val4 === 'leafs'){
+	      		leaf.parts = 'leaf';
+	      	} else if(val4 === 'branch' || val4 === 'branches'){
+	      		leaf.parts = 'branch';
+	      	}
+	      	let params = {
+		  			op: "default",
+		  			prop: "leaf",
+		  			val: leaf
+		  		};
+		  		set(node, options, function (err1, val1) {//graph
+		        resume([].concat(err1).concat(err3).concat(err2).concat(err4), val1);
+		      }, params);
+	      });
   		});
   	});
   };

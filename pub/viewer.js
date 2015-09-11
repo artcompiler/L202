@@ -71,13 +71,19 @@ window.exports.viewer = (function () {
         .attr("stroke-opacity", graphs.bopacity);
 
       if(graphs.leaf){
+        var ltest = function(d){return true;};
+        if(graphs.leaf.parts !== 'all'){
+          ltest = (graphs.leaf.parts === 'leaf') ? function(d){return !d.children;} : function(d){return d.children;};
+        }//if leaf, we only highlight if it has no children (is a leaf), otherwise we highlight only ones that DO have children.
         rect.attr("fill", function(d) {
           var col = color((d.children ? d : d.parent).key);
-          graphs.leaf.ranges.forEach(function (element, index, array) {//for each range
-            if(+d.value >= +element[0] && +d.value <= +element[1]){//each has two values that give the range.
-               col = graphs.leaf.colors[index];
-            }//matches with the first.
-          });
+          if(ltest(d)){
+            graphs.leaf.ranges.forEach(function (element, index, array) {//for each range
+              if(+d.value >= +element[0] && +d.value <= +element[1]){//each has two values that give the range.
+                 col = graphs.leaf.colors[index];
+              }//matches with the first.
+            });
+          }
           return col;
         });
       }
@@ -165,13 +171,19 @@ window.exports.viewer = (function () {
         .attr("stroke-opacity", graphs.bopacity)
         .style("fill", function(d) { return color((d.children ? d : d.parent).key); });
       if(graphs.leaf){
+        var ltest = function(d){return true;};
+        if(graphs.leaf.parts !== 'all'){
+          ltest = (graphs.leaf.parts === 'leaf') ? function(d){return !d.children;} : function(d){return d.children;};
+        }
         path.style("fill", function(d) {
           var col = color((d.children ? d : d.parent).key);
-          graphs.leaf.ranges.forEach(function (element, index, array) {//for each range
-            if(+d.value >= +element[0] && +d.value <= +element[1]){//each has two values that give the range.
-               col = graphs.leaf.colors[index];
-            }//matches with the first.
-          });
+          if(ltest(d)){
+            graphs.leaf.ranges.forEach(function (element, index, array) {//for each range
+              if(+d.value >= +element[0] && +d.value <= +element[1]){//each has two values that give the range.
+                 col = graphs.leaf.colors[index];
+              }//matches with the first.
+            });
+          }
           return col;
         });
       }
