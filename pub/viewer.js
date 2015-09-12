@@ -69,9 +69,7 @@ window.exports.viewer = (function () {
           var tt = color((d.children ? d : d.parent).key);
           return "rgba("+tt.r+","+tt.g+","+tt.b+","+tt.a+")";
         })
-        .attr("opacity", graphs.opacity)
         .attr("stroke", "rgba("+graphs.bcolor.r+","+graphs.bcolor.g+","+graphs.bcolor.b+","+graphs.bcolor.a+")")
-        .attr("stroke-opacity", graphs.bopacity);
 
       if(graphs.leaf){
         var ltest = function(d){return true;};
@@ -171,8 +169,6 @@ window.exports.viewer = (function () {
       var path = svg.append("path")
         .attr("d", arc)
         .attr("stroke", "rgba("+graphs.bcolor.r+","+graphs.bcolor.g+","+graphs.bcolor.b+","+graphs.bcolor.a+")")
-        .attr("opacity", graphs.opacity)
-        .attr("stroke-opacity", graphs.bopacity)
         .style("fill", function(d) {
           var tt = color((d.children ? d : d.parent).key);
           return "rgba("+tt.r+","+tt.g+","+tt.b+","+tt.a+")";

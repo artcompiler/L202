@@ -26,6 +26,6 @@ exports.globalLexicon = {
     "rgba" : { "tk": 0x01, "name": "RGBA", "cls": "function", "length": 4, "arity": 4},
     "brewer" : { "tk": 0x01, "name": "BREWER", "cls": "function", "length": 1, "arity": 1},
     "highlight" : { "tk": 0x01, "name": "LEAF", "cls": "function", "length": 4, "arity": 4},
-    "border-opacity" : { "tk": 0x01, "name": "BOPACITY", "cls": "function", "length": 2, "arity": 2},
-    "fill-opacity" : { "tk": 0x01, "name": "OPACITY", "cls": "function", "length": 2, "arity": 2},    
+    //"border-opacity" : { "tk": 0x01, "name": "BOPACITY", "cls": "function", "length": 2, "arity": 2},
+    //"fill-opacity" : { "tk": 0x01, "name": "OPACITY", "cls": "function", "length": 2, "arity": 2},    
 }

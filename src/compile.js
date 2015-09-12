@@ -572,14 +572,14 @@ let translate = (function() {
   	visit(node.elts[1], options, function (err2, val2) {
 			if(typeof val2 === "string" && /^#[0-9A-F]{6}$/i.test(val2)){//valid hex string.
     		var temp = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(val2);
-    		ret = ret.concat({
+    		ret = {
     			r: parseInt(temp[1], 16),
     			g: parseInt(temp[2], 16),
     			b: parseInt(temp[3], 16),
     			a: 1
-    		});
+    		};
     	} else if(!isNaN(val2.r) && !isNaN(val2.g) && !isNaN(val2.b) && !isNaN(val2.a)){
-    		ret = ret.concat(val2);
+    		ret = val2;
     	} else {
     		err2 = err2.concat(error("Please provide a color, array, or brewer color.", node.elts[1]));
     	}
@@ -652,7 +652,7 @@ let translate = (function() {
   		});
   	});
   };
-  function opacity(node, options, resume) {
+  /*function opacity(node, options, resume) {
   	visit(node.elts[1], options, function (err2, val2) {
   		if(isNaN(val2) || val2 < 0){
   			err2 = err2.concat(error("Alpha must be a positive number.", node.elts[1]));
@@ -673,8 +673,8 @@ let translate = (function() {
   			resume([].concat(err1).concat(err2), val1);
   		}, params);
   	});
-  }
-  function bopacity(node, options, resume) {
+  }*/
+  /*function bopacity(node, options, resume) {
   	visit(node.elts[1], options, function (err2, val2) {
   		if(isNaN(val2) || val2 < 0){
   			err2 = err2.concat(error("Alpha must be a positive number.", node.elts[1]));
@@ -695,7 +695,7 @@ let translate = (function() {
   			resume([].concat(err1).concat(err2), val1);
   		}, params);
   	});
-  }
+  }*/
   function brewer(node, options, resume) {//takes in color string, outputs array
     let ret = 0;
     visit(node.elts[0], options, function (err, val) {
@@ -710,31 +710,6 @@ let translate = (function() {
       resume([].concat(err), ret);//finds the right name and then grabs the colorbrewer array
     });
   }
-  /*function rgb(node, options, resume){//takes in rgb outputs hex
-    let ret = "";
-    visit(node.elts[0], options, function (err1, val1) {//b
-      if(isNaN(val1) || val1 < 0 || +val1 > 255){
-        err1 = err1.concat(error("Argument must be between 0 and 255.", node.elts[0]));
-      }
-      val1 = (+val1).toString(16);
-      ret = (val1.length == 1 ? "0" + val1 : val1) + ret;
-      visit(node.elts[1], options, function (err2, val2) {//g
-        if(isNaN(val2) || val2 < 0 || +val2 > 255){
-          err2 = err2.concat(error("Argument must be between 0 and 255.", node.elts[1]));
-        }
-        val2 = (+val2).toString(16);
-        ret = (val2.length == 1 ? "0" + val2 : val2) + ret;
-        visit(node.elts[2], options, function (err3, val3) {//r
-          if(isNaN(val3) || val3 < 0 || +val3 > 255){
-            err3 = err3.concat(error("Argument must be between 0 and 255.", node.elts[2]));
-          }
-          val3 = (+val3).toString(16);
-          ret = "#" + (val3.length == 1 ? "0" + val3 : val3) + ret;
-          resume([].concat(err1).concat(err2).concat(err3), ret);
-        });
-      });
-    });
-  }*/
   function rgba(node, options, resume){
   	visit(node.elts[0], options, function (err1, val1) {//a
   		if(isNaN(val1) || val1 < 0){
@@ -907,8 +882,8 @@ let translate = (function() {
     "RGBA" : rgba,
     "BREWER" : brewer,
     "LEAF" : leaf,
-    "BOPACITY" : bopacity,
-    "OPACITY" : opacity,
+    //"BOPACITY" : bopacity,
+    //"OPACITY" : opacity,
   }
   return translate;
 })();
