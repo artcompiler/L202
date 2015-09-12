@@ -23,6 +23,7 @@ exports.globalLexicon = {
     "zoom" : { "tk": 0x01, "name": "ZOOM", "cls": "function", "length": 1, "arity": 1},
     "rotate" : { "tk": 0x01, "name": "ROTATE", "cls": "function", "length": 2, "arity": 2},
     "rgb" : { "tk": 0x01, "name": "RGB", "cls": "function", "length": 3, "arity": 3},
+    "rgba" : { "tk": 0x01, "name": "RGBA", "cls": "function", "length": 4, "arity": 4},
     "brewer" : { "tk": 0x01, "name": "BREWER", "cls": "function", "length": 1, "arity": 1},
     "highlight" : { "tk": 0x01, "name": "LEAF", "cls": "function", "length": 4, "arity": 4},
     "border-opacity" : { "tk": 0x01, "name": "BOPACITY", "cls": "function", "length": 2, "arity": 2},

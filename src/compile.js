@@ -399,10 +399,10 @@ let translate = (function() {
     		width: 960,
     		orientation: 'vertical',
     		style: [],
-    		color: colorbrewer['Pastel1'][9],
+    		color: [{r:200, g:200, b:200, a:1}],
     		opacity: 1,
     		bopacity: 1,
-    		bcolor: '#ffffff',
+    		bcolor: {r:255, g:255, b:255, a:1},
     		graphtype: 'icicle',
     		rotation: 0
     	};
@@ -518,23 +518,44 @@ let translate = (function() {
     "red yellow green" : 'RdYlGn',
   }
   function color(node, options, resume) {//takes in array (colorbrewer or not) of hex values and the data object
+  	var ret = [];
     visit(node.elts[1], options, function (err2, val2) {
       if(!(val2 instanceof Array)){
       	if(typeof val2 === "string" && /^#[0-9A-F]{6}$/i.test(val2)){//valid hex string.
-      		val2 = [val2];//not bothering with not being an array internally any further than this.
-      	} else {err2 = err2.concat(error("Please provide a color, array, or brewer color.", node.elts[1]));}
+      		var temp = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(val2);
+      		ret = ret.concat({
+      			r: parseInt(temp[1], 16),
+      			g: parseInt(temp[2], 16),
+      			b: parseInt(temp[3], 16),
+      			a: 1
+      		});
+      	} else if(!isNaN(val2.r) && !isNaN(val2.g) && !isNaN(val2.b) && !isNaN(val2.a)){
+      		ret = ret.concat(val2);
+      	} else {
+      		err2 = err2.concat(error("Please provide a color, array, or brewer color.", node.elts[1]));
+      	}
       } else {
-        val2.forEach(function (element, index, array){//check that it's all hex values
-          if(typeof element !== "string" || !(/^#[0-9A-F]{6}$/i.test(element))){//not string or not hex
-            err2 = err2.concat(error("Index " + index + " is not a valid hex string.", node.elts[1]));
-          }
+        val2.forEach(function (element, index, array){
+	      	if(typeof element === "string" && /^#[0-9A-F]{6}$/i.test(element)){//valid hex string.
+	      		var temp = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(element);
+	      		ret = ret.concat({
+	      			r: parseInt(temp[1], 16),
+	      			g: parseInt(temp[2], 16),
+	      			b: parseInt(temp[3], 16),
+	      			a: 1
+	      		});
+	      	} else if(!isNaN(element.r) && !isNaN(element.g) && !isNaN(element.b) && !isNaN(element.a)){
+	      		ret = ret.concat(val2);
+	      	} else {
+	      		err2 = err2.concat(error("Element at "+index+" is not a valid color.", node.elts[1]));
+	      	}
         });
       }
       //assuming no errors it's formatted correctly without further issue.
       let params = {
         op: "default",
         prop: "color",
-        val: val2
+        val: ret
       };
       set(node, options, function (err1, val1) {
         resume([].concat(err1).concat(err2), val1);
@@ -542,14 +563,31 @@ let translate = (function() {
     });
   }
   function bcolor(node, options, resume) {
+  	var ret = {
+  		r: 0,
+  		g: 0,
+  		b: 0,
+  		a: 1,
+  	};
   	visit(node.elts[1], options, function (err2, val2) {
-  		if(typeof val2 !== "string" || !(/^#[0-9A-F]{6}$/i.test(val2))){
-  			err2 = err2.concat(error("Argument is not a valid hex string.", node.elts[1]));
-  		}
+			if(typeof val2 === "string" && /^#[0-9A-F]{6}$/i.test(val2)){//valid hex string.
+    		var temp = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(val2);
+    		ret = ret.concat({
+    			r: parseInt(temp[1], 16),
+    			g: parseInt(temp[2], 16),
+    			b: parseInt(temp[3], 16),
+    			a: 1
+    		});
+    	} else if(!isNaN(val2.r) && !isNaN(val2.g) && !isNaN(val2.b) && !isNaN(val2.a)){
+    		ret = ret.concat(val2);
+    	} else {
+    		err2 = err2.concat(error("Please provide a color, array, or brewer color.", node.elts[1]));
+    	}
+  		console.log(ret);
   		let params = {
   			op: "default",
   			prop: "bcolor",
-  			val: val2
+  			val: ret
   		};
       set(node, options, function (err1, val1) {
         resume([].concat(err1).concat(err2), val1);
@@ -574,15 +612,27 @@ let translate = (function() {
   			leaf.ranges = leaf.ranges.concat(val2);
   		}
   		visit(node.elts[1], options, function (err3, val3) {//colors
+  			var ret = [];
 	      if(!(val3 instanceof Array)){
 	        err3 = err3.concat(error("Please provide an array or brewer color.", node.elts[1]));
 	      } else {
-	        val3.forEach(function (element, index, array){//check that it's all hex values
-	          if(typeof element !== "string" || !(/^#[0-9A-F]{6}$/i.test(element))){//not string or not hex
-	            err3 = err3.concat(error("Index " + index + " is not a valid hex string.", node.elts[1]));
-	          }
+	        val3.forEach(function (element, index, array){
+		      	if(typeof element === "string" && /^#[0-9A-F]{6}$/i.test(element)){//valid hex string.
+		      		var temp = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(element);
+		      		ret = ret.concat({
+		      			r: parseInt(temp[1], 16),
+		      			g: parseInt(temp[2], 16),
+		      			b: parseInt(temp[3], 16),
+		      			a: 1
+		      		});
+		      	} else if(!isNaN(element.r) && !isNaN(element.g) && !isNaN(element.b) && !isNaN(element.a)){
+		      		ret = ret.concat(element);
+		      	} else {
+		      		console.log(element);
+		      		err3 = err3.concat(error("Element at "+index+" is not a valid color.", node.elts[1]));
+		      	}
 	        });
-	        leaf.colors = leaf.colors.concat(val3);
+	        leaf.colors = leaf.colors.concat(ret);
 	      }
 	      visit(node.elts[3], options, function (err4, val4){//text parameters
 	      	if(val4 === 'leaves' || val4 === 'leaf' || val4 === 'leafs'){
@@ -660,7 +710,7 @@ let translate = (function() {
       resume([].concat(err), ret);//finds the right name and then grabs the colorbrewer array
     });
   }
-  function rgb(node, options, resume){//takes in rgb outputs hex
+  /*function rgb(node, options, resume){//takes in rgb outputs hex
     let ret = "";
     visit(node.elts[0], options, function (err1, val1) {//b
       if(isNaN(val1) || val1 < 0 || +val1 > 255){
@@ -680,6 +730,52 @@ let translate = (function() {
           }
           val3 = (+val3).toString(16);
           ret = "#" + (val3.length == 1 ? "0" + val3 : val3) + ret;
+          resume([].concat(err1).concat(err2).concat(err3), ret);
+        });
+      });
+    });
+  }*/
+  function rgba(node, options, resume){
+  	visit(node.elts[0], options, function (err1, val1) {//a
+  		if(isNaN(val1) || val1 < 0){
+  			err1 = err1.concat(error("Alpha must be a positive number.", node.elts[0]));
+  		} else {
+        if(val1 > 1 && val1 < 100){
+          val1 = val1/100;
+        } else if (val1 > 100){
+          val1 = 1;
+        }
+  		}
+  		let test = node.elts.shift();
+  		rgb(node, options, function(err2, val2) {//run rgb, add alpha
+  			val2.a = val1
+  			node.elts.unshift(test);
+  			resume([].concat(err1).concat(err2), val2);
+  		});
+  	});
+  }
+  function rgb(node, options, resume){
+    let ret = {
+    	r: 0,
+    	g: 0,
+    	b: 0,
+    	a: 1
+    };
+    visit(node.elts[0], options, function (err1, val1) {//b
+      if(isNaN(val1) || val1 < 0 || +val1 > 255){
+        err1 = err1.concat(error("Argument must be between 0 and 255.", node.elts[0]));
+      }
+      ret.b = +val1;
+      visit(node.elts[1], options, function (err2, val2) {//g
+        if(isNaN(val2) || val2 < 0 || +val2 > 255){
+          err2 = err2.concat(error("Argument must be between 0 and 255.", node.elts[1]));
+        }
+        ret.g = +val2;
+        visit(node.elts[2], options, function (err3, val3) {//r
+          if(isNaN(val3) || val3 < 0 || +val3 > 255){
+            err3 = err3.concat(error("Argument must be between 0 and 255.", node.elts[2]));
+          }
+          ret.r = +val3;
           resume([].concat(err1).concat(err2).concat(err3), ret);
         });
       });
@@ -808,6 +904,7 @@ let translate = (function() {
     "ZOOM" : zoom,
     "ROTATE" : rotate,
     "RGB" : rgb,
+    "RGBA" : rgba,
     "BREWER" : brewer,
     "LEAF" : leaf,
     "BOPACITY" : bopacity,

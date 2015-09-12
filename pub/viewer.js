@@ -65,9 +65,12 @@ window.exports.viewer = (function () {
         .attr("y", function(d) { return y(d[loc[1]]) + ypos; })
         .attr("width", function(d) { return x(d[loc[2]]); })
         .attr("height", function(d) { return y(d[loc[3]]); })
-        .attr("fill", function(d) { return color((d.children ? d : d.parent).key); })
+        .attr("fill", function(d) {
+          var tt = color((d.children ? d : d.parent).key);
+          return "rgba("+tt.r+","+tt.g+","+tt.b+","+tt.a+")";
+        })
         .attr("opacity", graphs.opacity)
-        .attr("stroke", graphs.bcolor)
+        .attr("stroke", "rgba("+graphs.bcolor.r+","+graphs.bcolor.g+","+graphs.bcolor.b+","+graphs.bcolor.a+")")
         .attr("stroke-opacity", graphs.bopacity);
 
       if(graphs.leaf){
@@ -76,11 +79,13 @@ window.exports.viewer = (function () {
           ltest = (graphs.leaf.parts === 'leaf') ? function(d){return !d.children;} : function(d){return d.children;};
         }//if leaf, we only highlight if it has no children (is a leaf), otherwise we highlight only ones that DO have children.
         rect.attr("fill", function(d) {
-          var col = color((d.children ? d : d.parent).key);
+          var tt = color((d.children ? d : d.parent).key)
+          var col = "rgba("+tt.r+","+tt.g+","+tt.b+","+tt.a+")";
           if(ltest(d)){
             graphs.leaf.ranges.forEach(function (element, index, array) {//for each range
               if(+d.value >= +element[0] && +d.value <= +element[1]){//each has two values that give the range.
-                 col = graphs.leaf.colors[index];
+                 tt = graphs.leaf.colors[index];
+                 col = "rgba("+tt.r+","+tt.g+","+tt.b+","+tt.a+")";
               }//matches with the first.
             });
           }
@@ -165,22 +170,26 @@ window.exports.viewer = (function () {
 
       var path = svg.append("path")
         .attr("d", arc)
-        .attr("stroke", graphs.bcolor)
+        .attr("stroke", "rgba("+graphs.bcolor.r+","+graphs.bcolor.g+","+graphs.bcolor.b+","+graphs.bcolor.a+")")
         .attr("opacity", graphs.opacity)
-        .attr("stroke", graphs.bcolor)
         .attr("stroke-opacity", graphs.bopacity)
-        .style("fill", function(d) { return color((d.children ? d : d.parent).key); });
+        .style("fill", function(d) {
+          var tt = color((d.children ? d : d.parent).key);
+          return "rgba("+tt.r+","+tt.g+","+tt.b+","+tt.a+")";
+        })
       if(graphs.leaf){
         var ltest = function(d){return true;};
         if(graphs.leaf.parts !== 'all'){
           ltest = (graphs.leaf.parts === 'leaf') ? function(d){return !d.children;} : function(d){return d.children;};
         }
         path.style("fill", function(d) {
-          var col = color((d.children ? d : d.parent).key);
+          var tt = color((d.children ? d : d.parent).key)
+          var col = "rgba("+tt.r+","+tt.g+","+tt.b+","+tt.a+")";
           if(ltest(d)){
             graphs.leaf.ranges.forEach(function (element, index, array) {//for each range
               if(+d.value >= +element[0] && +d.value <= +element[1]){//each has two values that give the range.
-                 col = graphs.leaf.colors[index];
+                 tt = graphs.leaf.colors[index];
+                 col = "rgba("+tt.r+","+tt.g+","+tt.b+","+tt.a+")";
               }//matches with the first.
             });
           }
