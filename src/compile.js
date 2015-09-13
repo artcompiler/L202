@@ -302,8 +302,7 @@ var colorbrewer = {YlGn: {
 11: ["#8dd3c7","#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9","#bc80bd","#ccebc5"],
 12: ["#8dd3c7","#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9","#bc80bd","#ccebc5","#ffed6f"]
 }};
-var fs = require('fs');
-var https = require('https')
+var https = require('https');
 import {assert, message, messages, reserveCodeRange} from "./assert.js"
 
 reserveCodeRange(1000, 1999, "compile");
@@ -400,8 +399,8 @@ let translate = (function() {
     		orientation: 'vertical',
     		style: [],
     		color: [{r:200, g:200, b:200, a:1}],
-    		opacity: 1,
-    		bopacity: 1,
+    		opacity: null,
+    		bopacity: null,
     		bcolor: {r:255, g:255, b:255, a:1},
     		graphtype: 'icicle',
     		rotation: 0
@@ -521,34 +520,18 @@ let translate = (function() {
   	var ret = [];
     visit(node.elts[1], options, function (err2, val2) {
       if(!(val2 instanceof Array)){
-      	if(typeof val2 === "string" && /^#[0-9A-F]{6}$/i.test(val2)){//valid hex string.
-      		var temp = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(val2);
-      		ret = ret.concat({
-      			r: parseInt(temp[1], 16),
-      			g: parseInt(temp[2], 16),
-      			b: parseInt(temp[3], 16),
-      			a: 1
-      		});
-      	} else if(!isNaN(val2.r) && !isNaN(val2.g) && !isNaN(val2.b) && !isNaN(val2.a)){
-      		ret = ret.concat(val2);
-      	} else {
-      		err2 = err2.concat(error("Please provide a color, array, or brewer color.", node.elts[1]));
+      	var temp = colorcheck(val2);
+      	if(temp.err && temp.err.length){
+      		err2 = err2.concat(error(temp.err+".", node.elts[1]));
       	}
+      	ret = ret.concat(temp);
       } else {
         val2.forEach(function (element, index, array){
-	      	if(typeof element === "string" && /^#[0-9A-F]{6}$/i.test(element)){//valid hex string.
-	      		var temp = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(element);
-	      		ret = ret.concat({
-	      			r: parseInt(temp[1], 16),
-	      			g: parseInt(temp[2], 16),
-	      			b: parseInt(temp[3], 16),
-	      			a: 1
-	      		});
-	      	} else if(!isNaN(element.r) && !isNaN(element.g) && !isNaN(element.b) && !isNaN(element.a)){
-	      		ret = ret.concat(val2);
-	      	} else {
-	      		err2 = err2.concat(error("Element at "+index+" is not a valid color.", node.elts[1]));
-	      	}
+        	temp = colorcheck(element);
+        	if(temp.err && temp.err.length){
+      			err2 = err2.concat(error(temp.err+" at index "+index+".", node.elts[1]));
+      		}
+      		ret = ret.concat(temp);
         });
       }
       //assuming no errors it's formatted correctly without further issue.
@@ -562,28 +545,29 @@ let translate = (function() {
       }, params)
     });
   }
+  function colorcheck(val){
+  	var ret = {};
+  	if(typeof val === "string" && /^#[0-9A-F]{6}$/i.test(val)){//valid hex string.
+  		var temp = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(val);
+  		ret = {
+  			r: parseInt(temp[1], 16),
+  			g: parseInt(temp[2], 16),
+  			b: parseInt(temp[3], 16),
+  			a: 1
+  		};
+  	} else if(!isNaN(val.r) && !isNaN(val.g) && !isNaN(val.b) && !isNaN(val.a)){
+  		ret = val;
+  	} else {
+  		ret.err = "Please provide a valid color";
+  	}
+  	return ret;
+  }
   function bcolor(node, options, resume) {
-  	var ret = {
-  		r: 0,
-  		g: 0,
-  		b: 0,
-  		a: 1,
-  	};
   	visit(node.elts[1], options, function (err2, val2) {
-			if(typeof val2 === "string" && /^#[0-9A-F]{6}$/i.test(val2)){//valid hex string.
-    		var temp = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(val2);
-    		ret = {
-    			r: parseInt(temp[1], 16),
-    			g: parseInt(temp[2], 16),
-    			b: parseInt(temp[3], 16),
-    			a: 1
-    		};
-    	} else if(!isNaN(val2.r) && !isNaN(val2.g) && !isNaN(val2.b) && !isNaN(val2.a)){
-    		ret = val2;
-    	} else {
-    		err2 = err2.concat(error("Please provide a color, array, or brewer color.", node.elts[1]));
-    	}
-  		console.log(ret);
+  		var ret = colorcheck(val2);
+  		if(ret.err && ret.err.length){
+  			err2 = err2.concat(error(ret.err+".", node.elts[1]));
+  		}
   		let params = {
   			op: "default",
   			prop: "bcolor",
@@ -617,20 +601,11 @@ let translate = (function() {
 	        err3 = err3.concat(error("Please provide an array or brewer color.", node.elts[1]));
 	      } else {
 	        val3.forEach(function (element, index, array){
-		      	if(typeof element === "string" && /^#[0-9A-F]{6}$/i.test(element)){//valid hex string.
-		      		var temp = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(element);
-		      		ret = ret.concat({
-		      			r: parseInt(temp[1], 16),
-		      			g: parseInt(temp[2], 16),
-		      			b: parseInt(temp[3], 16),
-		      			a: 1
-		      		});
-		      	} else if(!isNaN(element.r) && !isNaN(element.g) && !isNaN(element.b) && !isNaN(element.a)){
-		      		ret = ret.concat(element);
-		      	} else {
-		      		console.log(element);
-		      		err3 = err3.concat(error("Element at "+index+" is not a valid color.", node.elts[1]));
-		      	}
+	        	var temp = colorcheck(element);
+	        	if(temp.err && temp.err.length){
+	      			err3 = err3.concat(error(temp.err+" at index "+index+".", node.elts[1]));
+	      		}
+	      		ret = ret.concat(temp);
 	        });
 	        leaf.colors = leaf.colors.concat(ret);
 	      }
@@ -652,7 +627,7 @@ let translate = (function() {
   		});
   	});
   };
-  /*function opacity(node, options, resume) {
+  function opacity(node, options, resume) {
   	visit(node.elts[1], options, function (err2, val2) {
   		if(isNaN(val2) || val2 < 0){
   			err2 = err2.concat(error("Alpha must be a positive number.", node.elts[1]));
@@ -673,8 +648,8 @@ let translate = (function() {
   			resume([].concat(err1).concat(err2), val1);
   		}, params);
   	});
-  }*/
-  /*function bopacity(node, options, resume) {
+  }
+  function bopacity(node, options, resume) {
   	visit(node.elts[1], options, function (err2, val2) {
   		if(isNaN(val2) || val2 < 0){
   			err2 = err2.concat(error("Alpha must be a positive number.", node.elts[1]));
@@ -695,7 +670,7 @@ let translate = (function() {
   			resume([].concat(err1).concat(err2), val1);
   		}, params);
   	});
-  }*/
+  }
   function brewer(node, options, resume) {//takes in color string, outputs array
     let ret = 0;
     visit(node.elts[0], options, function (err, val) {

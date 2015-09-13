@@ -70,7 +70,8 @@ window.exports.viewer = (function () {
           return "rgba("+tt.r+","+tt.g+","+tt.b+","+tt.a+")";
         })
         .attr("stroke", "rgba("+graphs.bcolor.r+","+graphs.bcolor.g+","+graphs.bcolor.b+","+graphs.bcolor.a+")")
-
+      if(graphs.opacity != null){rect.attr("opacity", graphs.opacity);}
+      if(graphs.bopacity != null){rect.attr("stroke-opacity", graphs.bopacity);}
       if(graphs.leaf){
         var ltest = function(d){return true;};
         if(graphs.leaf.parts !== 'all'){
@@ -173,6 +174,8 @@ window.exports.viewer = (function () {
           var tt = color((d.children ? d : d.parent).key);
           return "rgba("+tt.r+","+tt.g+","+tt.b+","+tt.a+")";
         })
+      if(graphs.opacity != null){path.attr("opacity", graphs.opacity);}
+      if(graphs.bopacity != null){path.attr("stroke-opacity", graphs.bopacity);}
       if(graphs.leaf){
         var ltest = function(d){return true;};
         if(graphs.leaf.parts !== 'all'){
@@ -217,6 +220,7 @@ window.exports.viewer = (function () {
                 var arcText = d3.select(this.parentNode).select("text");
                 arcText.transition().duration(750)
                   .attr("opacity", 1)
+                  .style("font-size", function(d) {return ((x(d.x+d.dx)-x(d.x) < 4*Math.PI/180) ? 0 : 12)+"px";})
                   .attr("transform", function() { return "rotate(" + ((x(e.x + e.dx / 2) - Math.PI / 2) / Math.PI * 180) + ")"})
                   .attr("x", function(d) { return y(d.y); });
               }
@@ -235,7 +239,7 @@ window.exports.viewer = (function () {
             if(graphs.labelling[1]){lab += d.value;}
             return lab;
           })
-          .style("font-size", function(d) { return ((x(d.dx) < 10/(Math.PI * 180)) ? 0 : 12)+"px";})
+          .style("font-size", function(d) {return ((x(d.x+d.dx)-x(d.x) < 4*Math.PI/180) ? 0 : 12)+"px";})
           .call(styles, graphs.style)
           .each(function (d) {
             d.width = this.getBBox().width;
