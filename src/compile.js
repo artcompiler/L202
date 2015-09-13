@@ -857,8 +857,8 @@ let translate = (function() {
     "RGBA" : rgba,
     "BREWER" : brewer,
     "LEAF" : leaf,
-    //"BOPACITY" : bopacity,
-    //"OPACITY" : opacity,
+    "BOPACITY" : bopacity,
+    "OPACITY" : opacity,
   }
   return translate;
 })();
