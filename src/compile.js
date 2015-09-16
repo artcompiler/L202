@@ -376,7 +376,7 @@ let translate = (function() {
           resume([].concat(err), val);
         } else if(params.op && params.op === "positive"){
           visit(node.elts[1], options, function (err2, val2) {
-            if(isNaN(val2) || val2 < 0){
+            if(isNaN(val2) || val2 <= 0){
               err2 = err2.concat(error("Argument must be a positive number.", node.elts[1]));
             }
             if(typeof val === "object" && val){
@@ -406,7 +406,7 @@ let translate = (function() {
     		rotation: 0
     	};
       if(typeof val !== "string" && (typeof val !== "object" || !val)){
-        err = err.concat(error("Data must be an object or URL.", node.elts[0]));
+        err = err.concat(error("Data must be a URL.", node.elts[0]));
       }
       resume([].concat(err), ret);
     })
