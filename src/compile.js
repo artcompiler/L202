@@ -399,8 +399,7 @@ let translate = (function() {
     		orientation: 'vertical',
     		style: [],
     		color: [{r:200, g:200, b:200, a:1}],
-    		opacity: null,
-    		bopacity: null,
+    		opacity: 1,
     		bcolor: {r:255, g:255, b:255, a:1},
     		graphtype: 'icicle',
     		rotation: 0
@@ -553,9 +552,8 @@ let translate = (function() {
   			r: parseInt(temp[1], 16),
   			g: parseInt(temp[2], 16),
   			b: parseInt(temp[3], 16),
-  			a: 1
   		};
-  	} else if(!isNaN(val.r) && !isNaN(val.g) && !isNaN(val.b) && !isNaN(val.a)){
+  	} else if(!isNaN(val.r) && !isNaN(val.g) && !isNaN(val.b)){
   		ret = val;
   	} else {
   		ret.err = "Please provide a valid color";
@@ -568,6 +566,7 @@ let translate = (function() {
   		if(ret.err && ret.err.length){
   			err2 = err2.concat(error(ret.err+".", node.elts[1]));
   		}
+  		if(isNaN(ret.a)){ret.a = 1;}
   		let params = {
   			op: "default",
   			prop: "bcolor",
@@ -649,28 +648,6 @@ let translate = (function() {
   		}, params);
   	});
   }
-  function bopacity(node, options, resume) {
-  	visit(node.elts[1], options, function (err2, val2) {
-  		if(isNaN(val2) || val2 < 0){
-  			err2 = err2.concat(error("Alpha must be a positive number.", node.elts[1]));
-  		} else {
-  			val2 = +val2;
-  			if(val2 > 1 && val2 < 100){
-  				val2 = val2/100;
-  			} else if (val2 > 100){
-  				val2 = 1;
-  			}
-  		}
-  		let params = {
-  			op: "default",
-  			prop: "bopacity",
-  			val: val2
-  		};
-  		set(node, options, function (err1, val1) {
-  			resume([].concat(err1).concat(err2), val1);
-  		}, params);
-  	});
-  }
   function brewer(node, options, resume) {//takes in color string, outputs array
     let ret = 0;
     visit(node.elts[0], options, function (err, val) {
@@ -709,7 +686,6 @@ let translate = (function() {
     	r: 0,
     	g: 0,
     	b: 0,
-    	a: 1
     };
     visit(node.elts[0], options, function (err1, val1) {//b
       if(isNaN(val1) || val1 < 0 || +val1 > 255){
@@ -857,7 +833,6 @@ let translate = (function() {
     "RGBA" : rgba,
     "BREWER" : brewer,
     "LEAF" : leaf,
-    "BOPACITY" : bopacity,
     "OPACITY" : opacity,
   }
   return translate;

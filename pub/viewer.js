@@ -48,7 +48,23 @@ window.exports.viewer = (function () {
     };//bar width > bbox width && bar height > bbox height, though in the horizontal case it's in the reverse order.
 
     var partition = d3.layout.partition()
-      .children(function(d) { return isNaN(d.value) ? d3.entries(d.value) : null; })
+      .children(function(d) {//use this to check for metadata. It'll be a little slower but it beats an entire different loop.
+        if(isNaN(d.value)){
+          var temp = d3.entries(d.value);
+          var ch = [];
+          temp.forEach(function (element, index) {
+            if(element.key === '_'){//the designated metadata definer.
+              d.title = element.value.title;//value is an object, even though 'value' may be part of it.
+              d.value = element.value.value;
+            } else {//add it to the array only if it isn't metadata.
+              ch.push(element);
+            }
+          });
+          return ch;
+        } else {
+          return null;
+        }
+      })
       .value(function(d) { return d.value; });
     var nodes = partition(d3.entries(root)[0]);
     var svg = svgd.selectAll("g")
@@ -67,11 +83,36 @@ window.exports.viewer = (function () {
         .attr("height", function(d) { return y(d[loc[3]]); })
         .attr("fill", function(d) {
           var tt = color((d.children ? d : d.parent).key);
+          if(isNaN(tt.a)){tt.a = graphs.opacity;}
           return "rgba("+tt.r+","+tt.g+","+tt.b+","+tt.a+")";
         })
         .attr("stroke", "rgba("+graphs.bcolor.r+","+graphs.bcolor.g+","+graphs.bcolor.b+","+graphs.bcolor.a+")")
-      if(graphs.opacity != null){rect.attr("opacity", graphs.opacity);}
-      if(graphs.bopacity != null){rect.attr("stroke-opacity", graphs.bopacity);}
+        .on("mouseover", function (d){
+          if(d.title && !d.tooltip){
+            d.tooltip = d3.select("body")
+              .append("div")
+              .style("position", "absolute")
+              .style("z-index", "10")
+              .style("visibility", "visible")
+              .text(d.title);
+          } else if (d.tooltip){
+            d.tooltip
+              .style("visibility", "visible");
+          }
+        })
+        .on("mousemove", function (d){
+          if(d.tooltip){
+            d.tooltip
+              .style("top", (d3.event.pageY-10)+"px")
+              .style("left",(d3.event.pageX+10)+"px");
+          }
+        })
+        .on("mouseout", function (d) {
+          if(d.tooltip){
+            d.tooltip
+              .style("visibility", "hidden");
+          }
+        });
       if(graphs.leaf){
         var ltest = function(d){return true;};
         if(graphs.leaf.parts !== 'all'){
@@ -172,10 +213,35 @@ window.exports.viewer = (function () {
         .attr("stroke", "rgba("+graphs.bcolor.r+","+graphs.bcolor.g+","+graphs.bcolor.b+","+graphs.bcolor.a+")")
         .style("fill", function(d) {
           var tt = color((d.children ? d : d.parent).key);
+          if(isNaN(tt.a)){tt.a = graphs.opacity;}
           return "rgba("+tt.r+","+tt.g+","+tt.b+","+tt.a+")";
         })
-      if(graphs.opacity != null){path.attr("opacity", graphs.opacity);}
-      if(graphs.bopacity != null){path.attr("stroke-opacity", graphs.bopacity);}
+        .on("mouseover", function (d){
+          if(d.title && !d.tooltip){
+            d.tooltip = d3.select("body")
+              .append("div")
+              .style("position", "absolute")
+              .style("z-index", "10")
+              .style("visibility", "visible")
+              .text(d.title);
+          } else if (d.tooltip){
+            d.tooltip
+              .style("visibility", "visible");
+          }
+        })
+        .on("mousemove", function (d){
+          if(d.tooltip){
+            d.tooltip
+              .style("top", (d3.event.pageY-10)+"px")
+              .style("left",(d3.event.pageX+10)+"px");
+          }
+        })
+        .on("mouseout", function (d) {
+          if(d.tooltip){
+            d.tooltip
+              .style("visibility", "hidden");
+          }
+        });
       if(graphs.leaf){
         var ltest = function(d){return true;};
         if(graphs.leaf.parts !== 'all'){
