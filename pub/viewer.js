@@ -56,6 +56,7 @@ window.exports.viewer = (function () {
             if(element.key === '_'){//the designated metadata definer.
               d.title = element.value.title;//value is an object, even though 'value' may be part of it.
               d.value = element.value.value;
+              d.name = element.value.name;
             } else {//add it to the array only if it isn't metadata.
               ch.push(element);
             }
@@ -179,7 +180,7 @@ window.exports.viewer = (function () {
           .attr("transform", function(d) { return "translate(" + (x(d[loc[0]]) + x(d[loc[2]]) / 2) + "," + (ypos + y(d[loc[1]]) + y(d[loc[3]]) / 2) + loc[6]; })
           .text(function(d) {
             var lab = '';
-            if(graphs.labelling[0]){lab += d.key+" ";}//space either doesn't matter or helps with value.
+            if(graphs.labelling[0]){lab += d.name ? d.name+" " : d.key+" ";}//space either doesn't matter or helps with value.
             if(graphs.labelling[1]){lab += d.value;}
             return lab;
           })
@@ -305,7 +306,7 @@ window.exports.viewer = (function () {
           .attr("dy", ".35em")
           .text(function(d) {
             var lab = '';
-            if(graphs.labelling[0]){lab += d.key+" ";}//space either doesn't matter or helps with value.
+            if(graphs.labelling[0]){lab += d.name ? d.name+" " : d.key+" ";}//space either doesn't matter or helps with value.
             if(graphs.labelling[1]){lab += d.value;}
             return lab;
           })
