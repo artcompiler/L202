@@ -291,7 +291,7 @@ window.exports.viewer = (function () {
                 var arcText = d3.select(this.parentNode).select("text");
                 arcText.transition().duration(750)
                   .attr("opacity", 1)
-                  .style("font-size", function(d) {return ((x(d.x+d.dx)-x(d.x) < 4*Math.PI/180) ? 0 : 12)+"px";})
+                  .attr("opacity", function(d) {return ((x(d.x+d.dx)-x(d.x) < 4*Math.PI/180) ? 0 : 1);})
                   .attr("transform", function() { return "rotate(" + ((x(e.x + e.dx / 2) - Math.PI / 2) / Math.PI * 180) + ")"})
                   .attr("x", function(d) { return y(d.y); });
               }
@@ -310,7 +310,7 @@ window.exports.viewer = (function () {
             if(graphs.labelling[1]){lab += d.value;}
             return lab;
           })
-          .style("font-size", function(d) {return ((x(d.x+d.dx)-x(d.x) < 4*Math.PI/180) ? 0 : 12)+"px";})
+          .attr("opacity", function(d) {return ((x(d.x+d.dx)-x(d.x) < 4*Math.PI/180) ? 0 : 1);})
           .call(styles, graphs.style)
           .each(function (d) {
             d.width = this.getBBox().width;
