@@ -119,12 +119,14 @@ window.exports.viewer = (function () {
           ltest = (graphs.leaf.parts === 'leaf') ? function(d){return !d.children;} : function(d){return d.children;};
         }//if leaf, we only highlight if it has no children (is a leaf), otherwise we highlight only ones that DO have children.
         rect.attr("fill", function(d) {
-          var tt = color((d.children ? d : d.parent).key)
+          var tt = color((d.children ? d : d.parent).key);
+          if(isNaN(tt.a)){tt.a = graphs.opacity;}
           var col = "rgba("+tt.r+","+tt.g+","+tt.b+","+tt.a+")";
           if(ltest(d)){
             graphs.leaf.ranges.forEach(function (element, index, array) {//for each range
               if(+d.value >= +element[0] && +d.value <= +element[1]){//each has two values that give the range.
                  tt = graphs.leaf.colors[index];
+                 if(isNaN(tt.a)){tt.a = graphs.opacity;}
                  col = "rgba("+tt.r+","+tt.g+","+tt.b+","+tt.a+")";
               }//matches with the first.
             });
@@ -248,12 +250,14 @@ window.exports.viewer = (function () {
           ltest = (graphs.leaf.parts === 'leaf') ? function(d){return !d.children;} : function(d){return d.children;};
         }
         path.style("fill", function(d) {
-          var tt = color((d.children ? d : d.parent).key)
+          var tt = color((d.children ? d : d.parent).key);
+          if(isNaN(tt.a)){tt.a = graphs.opacity;}
           var col = "rgba("+tt.r+","+tt.g+","+tt.b+","+tt.a+")";
           if(ltest(d)){
             graphs.leaf.ranges.forEach(function (element, index, array) {//for each range
               if(+d.value >= +element[0] && +d.value <= +element[1]){//each has two values that give the range.
                  tt = graphs.leaf.colors[index];
+                 if(isNaN(tt.a)){tt.a = graphs.opacity;}
                  col = "rgba("+tt.r+","+tt.g+","+tt.b+","+tt.a+")";
               }//matches with the first.
             });
