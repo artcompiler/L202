@@ -203,8 +203,9 @@ window.exports.viewer = (function () {
         .range([0, 2*Math.PI]);
       var y = d3.scale.sqrt()
         .range([0, radius]);
+      var angle = isNaN(graphs.rotation) ? 0 : graphs.rotation;
       svg
-        .attr("transform", "translate(" + graphs.width/2 + "," + (graphs.height/2 + 10) + ")rotate("+ graphs.rotation +")");
+        .attr("transform", "translate(" + graphs.width/2 + "," + (graphs.height/2) + ")rotate("+ angle +")");
       var arc = d3.svg.arc()
         .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x))); })
         .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx))); })
@@ -245,6 +246,16 @@ window.exports.viewer = (function () {
               .style("visibility", "hidden");
           }
         });
+
+      if(graphs.rotation === 'free'){
+        path.on("wheel", function (d) {
+          d3.event.preventDefault();
+          var delta = Math.max(-1, Math.min(1, (d3.event.wheelDelta || -d3.event.detail)));
+          angle += delta;//just find a good constant.
+          svg
+            .attr("transform", "translate(" + graphs.width/2 + "," + (graphs.height/2) + ")rotate("+ angle +")");
+        });
+      }
       if(graphs.leaf){
         var ltest = function(d){return true;};
         if(graphs.leaf.parts !== 'all'){
@@ -310,12 +321,22 @@ window.exports.viewer = (function () {
             if(graphs.labelling[1]){lab += d.value;}
             return lab;
           })
-          .attr("opacity", function(d) {return ((x(d.x+d.dx)-x(d.x) < 4*Math.PI/180) ? 0 : 1);})
+          //.attr("opacity", function(d) {return ((x(d.x+d.dx)-x(d.x) < 4*Math.PI/180) ? 0 : 1);})
           .call(styles, graphs.style)
           .each(function (d) {
             d.width = this.getBBox().width;
             d.height = this.getBBox().height;
+          })
+          .attr("opacity", function(d) {return ((x(d.x+d.dx)-x(d.x) < 4*Math.PI/180) ? 0 : 1);});
+        if(graphs.rotation === 'free'){
+          text.on("wheel", function (d) {
+            d3.event.preventDefault();
+            var delta = Math.max(-1, Math.min(1, (d3.event.wheelDelta || -d3.event.detail)));
+            angle += delta;//just find a good constant.
+            svg
+              .attr("transform", "translate(" + graphs.width/2 + "," + (graphs.height/2) + ")rotate("+ angle +")");
           });
+        }
       }
     }
     svgd
