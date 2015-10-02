@@ -9,7 +9,6 @@ window.exports.viewer = (function () {
     obj = JSON.parse(obj);
     var str;
     var graphs = [];//array of graph objects, rather than a single object full of arrays.
-    //in this case I can do this because icicle makes sure all parameters have defaults.
     if (obj.error && obj.error.length > 0) {
       str = "ERROR";
     } else {
@@ -57,6 +56,8 @@ window.exports.viewer = (function () {
               d.title = element.value.title;//value is an object, even though 'value' may be part of it.
               d.value = element.value.value;
               d.name = element.value.name;
+              d.link = element.value.link;
+              d.image = element.value.image;
             } else {//add it to the array only if it isn't metadata.
               ch.push(element);
             }
@@ -113,6 +114,14 @@ window.exports.viewer = (function () {
             d.tooltip
               .style("visibility", "hidden");
           }
+        })
+        .on("click", function (d) {
+          if(d.link){
+            window.open(d.link, "L202-target");
+          } else if(graphs.zoom){
+            return clicked(d);
+          }
+          return;
         });
       if(graphs.leaf){
         var ltest = function(d){return true;};
@@ -136,7 +145,6 @@ window.exports.viewer = (function () {
         });
       }
       if(graphs.zoom){
-        rect.on("click", clicked);
         var height = graphs.height;
         var width = graphs.width;
         var test = graphs.orientation;
@@ -245,6 +253,14 @@ window.exports.viewer = (function () {
             d.tooltip
               .style("visibility", "hidden");
           }
+        })
+        .on("click", function (d) {
+          if(d.link){
+            window.open(d.link, "L202-target");
+          } else if(graphs.zoom){
+            return click(d);
+          }
+          return;
         });
 
       if(graphs.rotation === 'free'){
@@ -278,7 +294,6 @@ window.exports.viewer = (function () {
         });
       }
       if(graphs.zoom){
-        path.on("click", click);
         function click(d) {
           if(text){
             text.transition().attr("opacity", 0);
