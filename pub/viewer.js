@@ -57,7 +57,11 @@ window.exports.viewer = (function () {
               d.value = element.value.value;
               d.name = element.value.name;
               d.link = element.value.link;
-              d.image = element.value.image;
+              d.image = element.value.image ? element.value.image
+                .replace(/&amp;/g, "&")
+                .replace(/&lt;/g, "<")
+                .replace(/&gt;/g, ">")
+                .replace(/&quot;/g, "'") : null;
             } else {//add it to the array only if it isn't metadata.
               ch.push(element);
             }
@@ -163,21 +167,44 @@ window.exports.viewer = (function () {
           if(text){
             text.transition().attr("opacity", 0);
           }
+          img.transition().style("opacity", 0);
 
           rect.transition()
               .duration(750)
-              .attr("x", function(d) { return xd(d[loc[0]]); })
+              .attr("x", function(d) {
+                return xd(d[loc[0]]); })
               .attr("y", function(d) { return yd(d[loc[1]]); })
               .attr("width", function(d) { return xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]); })
               .attr("height", function(d) { return yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]); })
               .each("end", function(e, i) {
                 if(e.x >= d.x && e.x < (d.x + d.dx)) {
                   var arcText = d3.select(this.parentNode).select("text");
+                  var arcImg = d3.select(this.parentNode).select("image");
                   arcText.transition().duration(750)
-                    .attr("opacity", function(d) {
+                    .attr("opacity", function (d) {
                       return textch(d) ? 1 : 0;
                     })
-                    .attr("transform", function(d) { return "translate(" + (xd(d[loc[0]]) + (xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]))/2) + "," + (yd(d[loc[1]]) + (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]))/2) + loc[6]; });
+                    .attr("transform", function(d) {
+                      return "translate(" + (xd(d[loc[0]]) + (xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]))/2) +
+                        "," + (yd(d[loc[1]]) + (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]))/2) + loc[6];
+                      });
+                  arcImg.transition().duration(750)
+                    .style("opacity", function (d) {
+                      if(d.image){
+                        return ((xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]])) > (d['img'+loc[5]]+2) && (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]])) > (d['img'+loc[4]]+2)) ? 1 : 0;
+                      } else {return 0;}
+                    })
+                    .attr("transform", function (d) {
+                      if(d.image){
+                        if(graphs.orientation === "horizontal"){
+                          var width = -(d.imgwidth)/2;
+                        } else {
+                          var width = (d.imgheight)/2;
+                        }
+                        return "translate(" + (xd(d[loc[0]]) + width + (xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]))/2) +
+                          "," + (yd(d[loc[1]]) - d['img'+loc[4]]/2 + (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]))/2) + loc[6];
+                      } else return '';
+                    });
                 }
               });
         }
@@ -188,8 +215,10 @@ window.exports.viewer = (function () {
           .attr("transform", function(d) { return "translate(" + (x(d[loc[0]]) + x(d[loc[2]]) / 2) + "," + (ypos + y(d[loc[1]]) + y(d[loc[3]]) / 2) + loc[6]; })
           .text(function(d) {
             var lab = '';
-            if(graphs.labelling[0]){lab += d.name ? d.name+" " : d.key+" ";}//space either doesn't matter or helps with value.
-            if(graphs.labelling[1]){lab += d.value;}
+            if(!d.image){
+              if(graphs.labelling[0]){lab += d.name ? d.name+" " : d.key+" ";}//space either doesn't matter or helps with value.
+              if(graphs.labelling[1]){lab += d.value;}
+            }
             return lab;
           })
           .style("text-anchor", 'middle')
@@ -204,6 +233,60 @@ window.exports.viewer = (function () {
             return textcheck(d) ? 1 : 0;//if it's true the box is larger than the text in both directions
           });
       }
+      var img = svg.append("image")
+        .attr("width", function (d) {
+          if(d.image){
+            return (d.imgwidth = getWidth(d.image));
+          } else {
+            return d.imgwidth = 0;
+          }
+        })
+        .attr("height", function (d) {
+          if(d.image){
+            return (d.imgheight = getHeight(d.image));
+          } else {
+            return d.imgheight = 0;
+          }
+        })
+        .attr("transform", function (d){
+          if(graphs.orientation === "horizontal"){
+            var width = -(d.imgwidth)/2;
+          } else {
+            var width = (d.imgheight)/2;
+          }
+          return "translate(" + (x(d[loc[0]]) + width + x(d[loc[2]]) / 2) + "," + (ypos + y(d[loc[1]]) - d['img'+loc[4]]/2 + y(d[loc[3]]) / 2) + loc[6];
+        })
+        .style("opacity", function (d) {
+          return ((x(d[loc[2]]) > d['img'+loc[5]]+2) && (y(d[loc[3]]) > (d['img'+loc[4]]+2))) ? 1 : 0;
+        })
+        .attr("xlink:href", function (d) {
+          return "data:image/svg+xml;utf8," + d.image;
+        });
+      //still has a quot; in front of it, fix that
+      function getWidth(str){
+        var unit = 1;
+        var begin = str.indexOf("width=") + 7;  // width="
+        str = str.substring(begin);
+        var end = str.indexOf("px");
+        if (end < 0) {
+          end = str.indexOf("ex");
+          unit = 6;
+        }
+        str = str.substring(0, end);
+        return +str * unit;
+      };
+      function getHeight(str) {
+        var unit = 1;
+        var begin = str.indexOf("height") + 8;  // height="
+        str = str.substring(begin);
+        var end = str.indexOf("px");
+        if (end < 0) {
+          end = str.indexOf("ex");
+          unit = 6;
+        }
+        str = str.substring(0, end);
+        return +str * unit;
+      };
     } else if(graphs.graphtype === "sunburst"){
       //needed differences: scaling, radius, translation to center, arc and path instead of rect
       var radius = Math.min(graphs.width, graphs.height)/2;
