@@ -303,6 +303,7 @@ var colorbrewer = {YlGn: {
 12: ["#8dd3c7","#ffffb3","#bebada","#fb8072","#80b1d3","#fdb462","#b3de69","#fccde5","#d9d9d9","#bc80bd","#ccebc5","#ffed6f"]
 }};
 var https = require('https');
+var http = require('http');
 import {assert, message, messages, reserveCodeRange} from "./assert.js"
 
 reserveCodeRange(1000, 1999, "compile");
@@ -716,7 +717,13 @@ let translate = (function() {
         err = err.concat(error("Argument Data invalid.", node.elts[0]));
       } else {//have to make sure it's an object before you start assigning properties.
         if(typeof val.tree === "string"){
-          https.get(val.tree, function(res) {
+          let protocol;
+          if (val.tree.indexOf("https") >= 0) {
+            protocol = https;
+          } else {
+            protocol = http;
+          }
+          protocol.get(val.tree, function(res) {
             var obj = '';
 
             res.on('data', function(d) {
