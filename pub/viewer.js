@@ -238,6 +238,14 @@ window.exports.viewer = (function () {
           .each(function (d) {
             d.width = this.getBBox().width;
             d.height = this.getBBox().height;
+          })
+          .on("click", function (d) {
+            if(d.link){
+              window.open(d.link, "L202-target");
+            } else if(graphs.zoom){
+              return clicked(d);
+            }
+            return;
           });
         text
           .attr("opacity", function (d) {
@@ -271,6 +279,14 @@ window.exports.viewer = (function () {
             })
             .attr("xlink:href", function (d) {
               return "data:image/svg+xml;utf8," + d.image;
+            })
+            .on("click", function (d) {
+              if(d.link){
+                window.open(d.link, "L202-target");
+              } else if(graphs.zoom){
+                return clicked(d);
+              }
+              return;
             });
         }
       }
@@ -423,7 +439,15 @@ window.exports.viewer = (function () {
             d.width = this.getBBox().width;
             d.height = this.getBBox().height;
           })
-          .attr("opacity", function(d) {return ((x(d.x+d.dx)-x(d.x) < 4*Math.PI/180) ? 0 : 1);});
+          .attr("opacity", function(d) {return ((x(d.x+d.dx)-x(d.x) < 4*Math.PI/180) ? 0 : 1);})
+          .on("click", function (d) {
+            if(d.link){
+              window.open(d.link, "L202-target");
+            } else if(graphs.zoom){
+              return click(d);
+            }
+            return;
+          });
         if(graphs.labelling[2]){
           var img = svg.append("image")
             .attr("width", function (d) {
@@ -451,6 +475,14 @@ window.exports.viewer = (function () {
             })
             .attr("xlink:href", function (d) {
               return "data:image/svg+xml;utf8," + d.image;
+            })
+            .on("click", function (d) {
+              if(d.link){
+                window.open(d.link, "L202-target");
+              } else if(graphs.zoom){
+                return click(d);
+              }
+              return;
             });
         }
         if(graphs.rotation === 'free'){
