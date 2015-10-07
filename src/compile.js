@@ -450,7 +450,7 @@ let translate = (function() {
     }, params);
   };
   function labels(node, options, resume) {
-  	var lab = [false, false];//labelling[0] is key, labelling [1] is value.
+  	var lab = [false, false, false];//labelling[0] is key, labelling [1] is value.
   	visit(node.elts[1], options, function (err2, val2) {//parameter list
   		if(typeof val2 === "string"){
   			val2 = [val2];
@@ -463,6 +463,8 @@ let translate = (function() {
   					lab[0] = true;
   				} else if(element == "number" || element == "value"){
   					lab[1] = true;
+  				} else if(element == "image" || element == "picture"){
+  					lab[2] = true;  					
   				} else {
   					err2 = err2.concat(error(element+" is not a valid label parameter, try name or value.", node.elts[1]));
   				}

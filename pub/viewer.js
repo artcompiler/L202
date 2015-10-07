@@ -38,9 +38,9 @@ window.exports.viewer = (function () {
       .range(graphs.color);
     var root = graphs.tree;
     if(graphs.orientation === "vertical"){
-      var loc = ['x', 'y', 'dx', 'dy', 'width', 'height', ")rotate(90)"];
+      var loc = ['x', 'y', 'dx', 'dy', 'width', 'height', "rotate(90)"];
     } else if(graphs.orientation === "horizontal"){
-      var loc = ['y', 'x', 'dy', 'dx', 'height', 'width', ")"];
+      var loc = ['y', 'x', 'dy', 'dx', 'height', 'width', "rotate(0)"];
     }
     var textcheck = function(d) {
       return x(d[loc[2]]) > (d[loc[5]]+2) && y(d[loc[3]]) > (d[loc[4]]+2);
@@ -188,47 +188,32 @@ window.exports.viewer = (function () {
           var textch = function(d) {//text width/height doesn't change from this
             return (xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]])) > (d[loc[5]]+2) && (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]])) > (d[loc[4]]+2);
           };
-          if(text){
-            text.transition().attr("opacity", 0);
-          }
-          img.transition().style("opacity", 0);
-
           rect.transition()
               .duration(750)
-              .attr("x", function(d) {
-                return xd(d[loc[0]]); })
+              .attr("x", function(d) { return xd(d[loc[0]]); })
               .attr("y", function(d) { return yd(d[loc[1]]); })
               .attr("width", function(d) { return xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]); })
               .attr("height", function(d) { return yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]); })
-              .each("end", function(e, i) {
+              .each(function(e, i) {
+                var arcText = d3.select(this.parentNode).select("text");
+                var arcImg = d3.select(this.parentNode).select("image");
+                arcText.transition().duration(750)
+                  .attr(loc[0], function (d) {
+                    var j = graphs.orientation == 'horizontal' ? (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]))/2 : 0; return yd(d[loc[1]]) + j;
+                  })
+                  .attr(loc[1], function (d) {
+                    return graphs.orientation == 'horizontal' ? xd(d[loc[0]]) : -xd(d[loc[0]]) - (xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]))/2;
+                  });
+                arcImg.transition().duration(750)
+                  .attr(loc[0], function (d) {
+                    var j = graphs.orientation == 'horizontal' ? (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]) - d.imgheight)/2 : 0; return yd(d[loc[1]]) + j;
+                  })
+                  .attr(loc[1], function (d) {
+                    return graphs.orientation == 'horizontal' ? xd(d[loc[0]]) : -xd(d[loc[0]]) - (xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]) + d.imgheight)/2;
+                  })
                 if(e.x >= d.x && e.x < (d.x + d.dx)) {
-                  var arcText = d3.select(this.parentNode).select("text");
-                  var arcImg = d3.select(this.parentNode).select("image");
-                  arcText.transition().duration(750)
-                    .attr("opacity", function (d) {
-                      return textch(d) ? 1 : 0;
-                    })
-                    .attr("transform", function(d) {
-                      return "translate(" + (xd(d[loc[0]]) + (xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]))/2) +
-                        "," + (yd(d[loc[1]]) + (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]))/2) + loc[6];
-                      });
-                  arcImg.transition().duration(750)
-                    .style("opacity", function (d) {
-                      if(d.image){
-                        return ((xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]])) > (d['img'+loc[5]]+2) && (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]])) > (d['img'+loc[4]]+2)) ? 1 : 0;
-                      } else {return 0;}
-                    })
-                    .attr("transform", function (d) {
-                      if(d.image){
-                        if(graphs.orientation === "horizontal"){
-                          var width = -(d.imgwidth)/2;
-                        } else {
-                          var width = (d.imgheight)/2;
-                        }
-                        return "translate(" + (xd(d[loc[0]]) + width + (xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]))/2) +
-                          "," + (yd(d[loc[1]]) - d['img'+loc[4]]/2 + (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]))/2) + loc[6];
-                      } else return '';
-                    });
+                  arcText.attr("opacity", function (d){ return textch(d) ? 1 : 0;});
+                  arcImg.style("opacity", function (d){ return ((xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]])) > (d['img'+loc[5]]+2) && (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]])) > (d['img'+loc[4]]+2)) ? 1 : 0;});
                 }
               });
         }
@@ -236,16 +221,18 @@ window.exports.viewer = (function () {
       if(graphs.labelling){
         var text = svg.append("text")
           .attr("dy", ".35em")
-          .attr("transform", function(d) { return "translate(" + (x(d[loc[0]]) + x(d[loc[2]]) / 2) + "," + (ypos + y(d[loc[1]]) + y(d[loc[3]]) / 2) + loc[6]; })
+          .attr("transform", function(d) { return loc[6]; })
+          .attr(loc[0], function(d) {var j = graphs.orientation == 'horizontal' ? y(d[loc[3]])/2 : 0; return y(d[loc[1]]) + j;})
+          .attr(loc[1], function(d) {return graphs.orientation == 'horizontal' ? x(d[loc[0]]) : -x(d[loc[0]]) - x(d[loc[2]])/2;})
           .text(function(d) {
             var lab = '';
-            if(!d.image){
+            if(!d.image || !graphs.labelling[2]){//if images are off or this lacks one
               if(graphs.labelling[0]){lab += d.name ? d.name+" " : d.key+" ";}//space either doesn't matter or helps with value.
               if(graphs.labelling[1]){lab += d.value;}
             }
             return lab;
           })
-          .style("text-anchor", 'middle')
+          .style("text-anchor", 'start')
           .style("font-size", 10+"px")
           .call(styles, graphs.style)
           .each(function (d) {
@@ -256,36 +243,37 @@ window.exports.viewer = (function () {
           .attr("opacity", function (d) {
             return textcheck(d) ? 1 : 0;//if it's true the box is larger than the text in both directions
           });
+        if(graphs.labelling[2]){
+          var img = svg.append("image")
+            .attr("width", function (d) {
+              if(d.image){
+                return (d.imgwidth = getWidth(d.image));
+              } else {
+                return d.imgwidth = 0;
+              }
+            })
+            .attr("height", function (d) {
+              if(d.image){
+                return (d.imgheight = getHeight(d.image));
+              } else {
+                return d.imgheight = 0;
+              }
+            })
+            .attr("transform", function(d) { return loc[6]; })
+            .attr(loc[0], function(d) {
+              var j = graphs.orientation == 'horizontal' ? (y(d[loc[3]]) - d.imgheight)/2: 0; return y(d[loc[1]]) + j;
+            })
+            .attr(loc[1], function(d) {
+              return graphs.orientation == 'horizontal' ? x(d[loc[0]]) : -x(d[loc[0]]) - (x(d[loc[2]]) + d.imgheight)/2;
+            })
+            .style("opacity", function (d) {
+              return ((x(d[loc[2]]) > d['img'+loc[5]]+2) && (y(d[loc[3]]) > (d['img'+loc[4]]+2))) ? 1 : 0;
+            })
+            .attr("xlink:href", function (d) {
+              return "data:image/svg+xml;utf8," + d.image;
+            });
+        }
       }
-      var img = svg.append("image")
-        .attr("width", function (d) {
-          if(d.image){
-            return (d.imgwidth = getWidth(d.image));
-          } else {
-            return d.imgwidth = 0;
-          }
-        })
-        .attr("height", function (d) {
-          if(d.image){
-            return (d.imgheight = getHeight(d.image));
-          } else {
-            return d.imgheight = 0;
-          }
-        })
-        .attr("transform", function (d){
-          if(graphs.orientation === "horizontal"){
-            var width = -(d.imgwidth)/2;
-          } else {
-            var width = (d.imgheight)/2;
-          }
-          return "translate(" + (x(d[loc[0]]) + width + x(d[loc[2]]) / 2) + "," + (ypos + y(d[loc[1]]) - d['img'+loc[4]]/2 + y(d[loc[3]]) / 2) + loc[6];
-        })
-        .style("opacity", function (d) {
-          return ((x(d[loc[2]]) > d['img'+loc[5]]+2) && (y(d[loc[3]]) > (d['img'+loc[4]]+2))) ? 1 : 0;
-        })
-        .attr("xlink:href", function (d) {
-          return "data:image/svg+xml;utf8," + d.image;
-        });
     } else if(graphs.graphtype === "sunburst"){
       var radius = Math.min(graphs.width, graphs.height)/2;
       var x = d3.scale.linear()
@@ -379,7 +367,9 @@ window.exports.viewer = (function () {
           if(text){
             text.transition().attr("opacity", 0);
           }
-          img.transition().style("opacity", 0);
+          if(img){
+            img.transition().style("opacity", 0);
+          }
           function tw(d){
             var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
                 yd = d3.interpolate(y.domain(), [d.y, 1]),
@@ -394,19 +384,22 @@ window.exports.viewer = (function () {
             .duration(750)
             .attrTween("d", tw(d))
             .each("end", function(e, i){//when the transition ends
+              var arcText = d3.select(this.parentNode).select("text");
+              var arcImg = d3.select(this.parentNode).select("image");
               if(e.x >= d.x && e.x < (d.x + d.dx)) {//grab all the text
-                var arcText = d3.select(this.parentNode).select("text");
-                var arcImg = d3.select(this.parentNode).select("image");
-                arcText.transition().duration(750)
+                arcText.transition().duration(0)
                   .attr("opacity", 1)
                   .attr("opacity", function(d) {return ((x(d.x+d.dx)-x(d.x) < 4*Math.PI/180) ? 0 : 1);})
                   .attr("transform", function() { return "rotate(" + ((x(e.x + e.dx / 2) - Math.PI / 2) / Math.PI * 180) + ")"})
                   .attr("x", function(d) { return y(d.y); });
-                arcImg.transition().duration(750)
+                arcImg.transition().duration(0)
                   .style("opacity", 1)
                   .attr("transform", function() { return "rotate(" + ((x(e.x + e.dx / 2) - Math.PI / 2) / Math.PI * 180) + ")"})
                   .attr("x", function(d) { return y(d.y+d.dy/2)-d.imgwidth; })
                   .attr("y", function(d) { return -d.imgheight/2;});
+              } else {
+                arcText.attr("opacity", 0);
+                arcImg.style("opacity", 0);
               }
             });
         }
@@ -419,7 +412,7 @@ window.exports.viewer = (function () {
           .attr("dy", ".35em")
           .text(function(d) {
             var lab = '';
-            if(!d.image){
+            if(!d.image || !graphs.labelling[2]){//if images are off or this lacks one
               if(graphs.labelling[0]){lab += d.name ? d.name+" " : d.key+" ";}//space either doesn't matter or helps with value.
               if(graphs.labelling[1]){lab += d.value;}
             }
@@ -431,6 +424,35 @@ window.exports.viewer = (function () {
             d.height = this.getBBox().height;
           })
           .attr("opacity", function(d) {return ((x(d.x+d.dx)-x(d.x) < 4*Math.PI/180) ? 0 : 1);});
+        if(graphs.labelling[2]){
+          var img = svg.append("image")
+            .attr("width", function (d) {
+              if(d.image){
+                return (d.imgwidth = getWidth(d.image));
+              } else {
+                return d.imgwidth = 0;
+              }
+            })
+            .attr("height", function (d) {
+              if(d.image){
+                return (d.imgheight = getHeight(d.image));
+              } else {
+                return d.imgheight = 0;
+              }
+            })
+            .attr("transform", function (d){
+              return "rotate(" + ((x(d.x + d.dx / 2) - Math.PI / 2) / Math.PI * 180) + ")";
+            })
+            .attr("x", function(d) { return y(d.y+d.dy/2)-d.imgwidth; })
+            .attr("y", function(d) { return -d.imgheight/2;})
+            .style("opacity", function (d) {
+              return 1;
+              //return ((x(d[loc[2]]) > d['img'+loc[5]]+2) && (y(d[loc[3]]) > (d['img'+loc[4]]+2))) ? 1 : 1;
+            })
+            .attr("xlink:href", function (d) {
+              return "data:image/svg+xml;utf8," + d.image;
+            });
+        }
         if(graphs.rotation === 'free'){
           text.on("wheel", function (d) {
             d3.event.preventDefault();
@@ -441,33 +463,6 @@ window.exports.viewer = (function () {
           });
         }
       }
-      var img = svg.append("image")
-        .attr("width", function (d) {
-          if(d.image){
-            return (d.imgwidth = getWidth(d.image));
-          } else {
-            return d.imgwidth = 0;
-          }
-        })
-        .attr("height", function (d) {
-          if(d.image){
-            return (d.imgheight = getHeight(d.image));
-          } else {
-            return d.imgheight = 0;
-          }
-        })
-        .attr("transform", function (d){
-          return "rotate(" + ((x(d.x + d.dx / 2) - Math.PI / 2) / Math.PI * 180) + ")";
-        })
-        .attr("x", function(d) { return y(d.y+d.dy/2)-d.imgwidth; })
-        .attr("y", function(d) { return -d.imgheight/2;})
-        .style("opacity", function (d) {
-          return 1;
-          //return ((x(d[loc[2]]) > d['img'+loc[5]]+2) && (y(d[loc[3]]) > (d['img'+loc[4]]+2))) ? 1 : 1;
-        })
-        .attr("xlink:href", function (d) {
-          return "data:image/svg+xml;utf8," + d.image;
-        });
     }
     svgd
       .attr("width", graphs.width)
