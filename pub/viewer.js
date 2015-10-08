@@ -119,32 +119,6 @@ window.exports.viewer = (function () {
           return "rgba("+tt.r+","+tt.g+","+tt.b+","+tt.a+")";
         })
         .attr("stroke", "rgba("+graphs.bcolor.r+","+graphs.bcolor.g+","+graphs.bcolor.b+","+graphs.bcolor.a+")")
-        /*.on("mouseover", function (d){
-          if(d.title && !d.tooltip){
-            d.tooltip = d3.select("body")
-              .append("div")
-              .style("position", "absolute")
-              .style("z-index", "10")
-              .style("visibility", "visible")
-              .text(d.title);
-          } else if (d.tooltip){
-            d.tooltip
-              .style("visibility", "visible");
-          }
-        })
-        .on("mousemove", function (d){
-          if(d.tooltip){
-            d.tooltip
-              .style("top", (d3.event.pageY-10)+"px")
-              .style("left",(d3.event.pageX+10)+"px");
-          }
-        })
-        .on("mouseout", function (d) {
-          if(d.tooltip){
-            d.tooltip
-              .style("visibility", "hidden");
-          }
-        })*/
         .on("click", function (d) {
           if(d.link){
             window.open(d.link, "L202-target");
@@ -250,6 +224,9 @@ window.exports.viewer = (function () {
             d.width = this.getBBox().width;
             d.height = this.getBBox().height;
           })
+          .attr("opacity", function (d) {
+            return textcheck(d) ? 1 : 0;//if it's true the box is larger than the text in both directions
+          })
           .on("click", function (d) {
             if(d.link){
               window.open(d.link, "L202-target");
@@ -266,10 +243,6 @@ window.exports.viewer = (function () {
                 return "";
               }
             });
-        text
-          .attr("opacity", function (d) {
-            return textcheck(d) ? 1 : 0;//if it's true the box is larger than the text in both directions
-          });
         if(graphs.labelling[2]){
           var img = svg.append("image")
             .attr("width", function (d) {
