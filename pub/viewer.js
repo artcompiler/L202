@@ -52,6 +52,8 @@ window.exports.viewer = (function () {
           var temp = d3.entries(d.value);
           var ch = [];
           temp.forEach(function (element, index) {
+            d.title = "";
+            d.link = "";
             if(element.key === '_'){//the designated metadata definer.
               d.title = element.value.title;//value is an object, even though 'value' may be part of it.
               d.value = element.value.value;
