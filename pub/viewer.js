@@ -117,7 +117,7 @@ window.exports.viewer = (function () {
           return "rgba("+tt.r+","+tt.g+","+tt.b+","+tt.a+")";
         })
         .attr("stroke", "rgba("+graphs.bcolor.r+","+graphs.bcolor.g+","+graphs.bcolor.b+","+graphs.bcolor.a+")")
-        .on("mouseover", function (d){
+        /*.on("mouseover", function (d){
           if(d.title && !d.tooltip){
             d.tooltip = d3.select("body")
               .append("div")
@@ -142,7 +142,7 @@ window.exports.viewer = (function () {
             d.tooltip
               .style("visibility", "hidden");
           }
-        })
+        })*/
         .on("click", function (d) {
           if(d.link){
             window.open(d.link, "L202-target");
@@ -172,6 +172,15 @@ window.exports.viewer = (function () {
           return col;
         });
       }
+      rect.append("svg:title")
+        .text(function (d){
+          if(!d.children){
+            return d.link + "\n" + d.title;
+          } else {
+            return "";
+          }
+        });
+
       if(graphs.zoom){
         var height = graphs.height;
         var width = graphs.width;
@@ -199,17 +208,17 @@ window.exports.viewer = (function () {
                 var arcImg = d3.select(this.parentNode).select("image");
                 arcText.transition().duration(750)
                   .attr(loc[0], function (d) {
-                    var j = graphs.orientation == 'horizontal' ? (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]))/2 : 0; return yd(d[loc[1]]) + j;
+                    var j = graphs.orientation == 'horizontal' ? (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]))/2 : 4; return yd(d[loc[1]]) + j;
                   })
                   .attr(loc[1], function (d) {
-                    return graphs.orientation == 'horizontal' ? xd(d[loc[0]]) : -xd(d[loc[0]]) - (xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]))/2;
+                    return graphs.orientation == 'horizontal' ? xd(d[loc[0]]) + 4: -xd(d[loc[0]]) - (xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]))/2;
                   });
                 arcImg.transition().duration(750)
                   .attr(loc[0], function (d) {
-                    var j = graphs.orientation == 'horizontal' ? (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]) - d.imgheight)/2 : 0; return yd(d[loc[1]]) + j;
+                    var j = graphs.orientation == 'horizontal' ? (yd(d[loc[1]] + d[loc[3]]) - yd(d[loc[1]]) - d.imgheight)/2 : 4; return yd(d[loc[1]]) + j;
                   })
                   .attr(loc[1], function (d) {
-                    return graphs.orientation == 'horizontal' ? xd(d[loc[0]]) : -xd(d[loc[0]]) - (xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]) + d.imgheight)/2;
+                    return graphs.orientation == 'horizontal' ? xd(d[loc[0]]) + 4: -xd(d[loc[0]]) - (xd(d[loc[0]] + d[loc[2]]) - xd(d[loc[0]]) + d.imgheight)/2;
                   })
                 if(e.x >= d.x && e.x < (d.x + d.dx)) {
                   arcText.attr("opacity", function (d){ return textch(d) ? 1 : 0;});
@@ -222,8 +231,8 @@ window.exports.viewer = (function () {
         var text = svg.append("text")
           .attr("dy", ".35em")
           .attr("transform", function(d) { return loc[6]; })
-          .attr(loc[0], function(d) {var j = graphs.orientation == 'horizontal' ? y(d[loc[3]])/2 : 0; return y(d[loc[1]]) + j;})
-          .attr(loc[1], function(d) {return graphs.orientation == 'horizontal' ? x(d[loc[0]]) : -x(d[loc[0]]) - x(d[loc[2]])/2;})
+          .attr(loc[0], function(d) {var j = graphs.orientation == 'horizontal' ? y(d[loc[3]])/2 : 4; return y(d[loc[1]]) + j;})
+          .attr(loc[1], function(d) {return graphs.orientation == 'horizontal' ? x(d[loc[0]]) + 4 : -x(d[loc[0]]) - x(d[loc[2]])/2;})
           .text(function(d) {
             var lab = '';
             if(!d.image || !graphs.labelling[2]){//if images are off or this lacks one
@@ -246,7 +255,15 @@ window.exports.viewer = (function () {
               return clicked(d);
             }
             return;
-          });
+          })
+          .append("svg:title")
+            .text(function (d){
+              if(!d.children){
+                return d.link + "\n" + d.title;
+              } else {
+                return "";
+              }
+            });
         text
           .attr("opacity", function (d) {
             return textcheck(d) ? 1 : 0;//if it's true the box is larger than the text in both directions
@@ -269,10 +286,10 @@ window.exports.viewer = (function () {
             })
             .attr("transform", function(d) { return loc[6]; })
             .attr(loc[0], function(d) {
-              var j = graphs.orientation == 'horizontal' ? (y(d[loc[3]]) - d.imgheight)/2: 0; return y(d[loc[1]]) + j;
+              var j = graphs.orientation == 'horizontal' ? (y(d[loc[3]]) - d.imgheight)/2: 4; return y(d[loc[1]]) + j;
             })
             .attr(loc[1], function(d) {
-              return graphs.orientation == 'horizontal' ? x(d[loc[0]]) : -x(d[loc[0]]) - (x(d[loc[2]]) + d.imgheight)/2;
+              return graphs.orientation == 'horizontal' ? x(d[loc[0]]) + 4 : -x(d[loc[0]]) - (x(d[loc[2]]) + d.imgheight)/2;
             })
             .style("opacity", function (d) {
               return ((x(d[loc[2]]) > d['img'+loc[5]]+2) && (y(d[loc[3]]) > (d['img'+loc[4]]+2))) ? 1 : 0;
@@ -287,7 +304,15 @@ window.exports.viewer = (function () {
                 return clicked(d);
               }
               return;
-            });
+            })
+            .append("svg:title")
+              .text(function (d){
+                if(!d.children){
+                  return d.link + "\n" + d.title;
+                } else {
+                  return "";
+                }
+              });
         }
       }
     } else if(graphs.graphtype === "sunburst"){
@@ -312,32 +337,6 @@ window.exports.viewer = (function () {
           var tt = color((d.children ? d : d.parent).key);
           if(isNaN(tt.a)){tt.a = graphs.opacity;}
           return "rgba("+tt.r+","+tt.g+","+tt.b+","+tt.a+")";
-        })
-        .on("mouseover", function (d){
-          if(d.title && !d.tooltip){
-            d.tooltip = d3.select("body")
-              .append("div")
-              .style("position", "absolute")
-              .style("z-index", "10")
-              .style("visibility", "visible")
-              .text(d.title);
-          } else if (d.tooltip){
-            d.tooltip
-              .style("visibility", "visible");
-          }
-        })
-        .on("mousemove", function (d){
-          if(d.tooltip){
-            d.tooltip
-              .style("top", (d3.event.pageY-10)+"px")
-              .style("left",(d3.event.pageX+10)+"px");
-          }
-        })
-        .on("mouseout", function (d) {
-          if(d.tooltip){
-            d.tooltip
-              .style("visibility", "hidden");
-          }
         })
         .on("click", function (d) {
           if(d.link){
@@ -378,6 +377,14 @@ window.exports.viewer = (function () {
           return col;
         });
       }
+      path.append("svg:title")
+        .text(function (d){
+          if(!d.children){
+            return d.link + "\n" + d.title;
+          } else {
+            return "";
+          }
+        });
       if(graphs.zoom){
         function click(d) {
           if(text){
@@ -447,7 +454,15 @@ window.exports.viewer = (function () {
               return click(d);
             }
             return;
-          });
+          })
+          .append("svg:title")
+            .text(function (d){
+              if(!d.children){
+                return d.link + "\n" + d.title;
+              } else {
+                return "";
+              }
+            });
         if(graphs.labelling[2]){
           var img = svg.append("image")
             .attr("width", function (d) {
@@ -483,7 +498,15 @@ window.exports.viewer = (function () {
                 return click(d);
               }
               return;
-            });
+            })
+            .append("svg:title")
+              .text(function (d){
+                if(!d.children){
+                  return d.link + "\n" + d.title;
+                } else {
+                  return "";
+                }
+              });
         }
         if(graphs.rotation === 'free'){
           text.on("wheel", function (d) {
