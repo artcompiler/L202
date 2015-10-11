@@ -48,9 +48,10 @@ window.exports.viewer = (function () {
 
     var partition = d3.layout.partition()
       .children(function(d) {//use this to check for metadata. It'll be a little slower but it beats an entire different loop.
-        if(isNaN(d.value)){
+        var ch = null;
+        if(d.value !== null && typeof d.value === 'object'){//typical case, for objects
           var temp = d3.entries(d.value);
-          var ch = [];
+          ch = [];
           temp.forEach(function (element, index) {
             d.title = "";
             d.link = "";
@@ -69,12 +70,27 @@ window.exports.viewer = (function () {
             }
           });
           return ch;
-        } else {
-          return null;
+        } else if(d.value && d.value.constructor === Array){//note that unless this is an array OF OBJECTS it's invalid.
+          ch = [];
+          var temp = {
+            key: null,
+            value: null,
+          };
+          d.value.forEach(function (element, index) {
+            temp.key = index.toString();//give it it's index as a name.
+            temp.value = element;//technically works even if it's, say, an index of numbers (in which case they'll be leaves)
+            ch.push(temp);
+          });
+        } else if(isNaN(d.value)){//not an array, object, or number
+          ch = [{
+            key: d.value,
+            value: 1,
+          }];
         }
+        return ch;
       })
       .value(function(d) { return d.value; });
-    var nodes = partition(d3.entries(root)[0]);
+    var nodes = root.constructor === Array ? partition(d3.entries({A: root})[0]) : partition(d3.entries(root)[0]);
     var svg = svgd.selectAll("g")
       .data(nodes)
       .enter().append("g");//let's try something new.

@@ -318,13 +318,13 @@ let translate = (function() {
     console.log("pool=" + JSON.stringify(pool, null, 2));
     nodePool = pool;
     return visit(pool.root, {}, resume);
-  }
+  };
   function error(str, nid) {
     return {
       str: str,
       nid: nid,
     };
-  }
+  };
   function visit(nid, options, resume) {
     assert(typeof resume === "function", message(1003));
     // Get the node from the pool of nodes.
@@ -333,25 +333,25 @@ let translate = (function() {
     assert(node.tag, message(1001, [nid]));
     assert(typeof table[node.tag] === "function", message(1004, [node.tag]));
     return table[node.tag](node, options, resume);
-  }
+  };
   // BEGIN VISITOR METHODS
   let edgesNode;
   function str(node, options, resume) {
     let val = node.elts[0];
     resume([], val);
-  }
+  };
   function num(node, options, resume) {
     let val = node.elts[0];
     resume([], val);
-  }
+  };
   function ident(node, options, resume) {
     let val = node.elts[0];
     resume([], val);
-  }
+  };
   function bool(node, options, resume) {
     let val = node.elts[0];
     resume([], val);
-  }
+  };
   function add(node, options, resume) {
     visit(node.elts[0], options, function (err1, val1) {
       val1 = +val1;
@@ -390,27 +390,27 @@ let translate = (function() {
         }
       }
     });
-  }
+  };
   function data(node, options, resume) {
     visit(node.elts[0], options, function (err, val) {
-    	var ret = {
-    		tree: val,
-    		height: 500,
-    		width: 960,
-    		orientation: 'vertical',
-    		style: [],
-    		color: [{r:200, g:200, b:200, a:1}],
-    		opacity: 1,
-    		bcolor: {r:255, g:255, b:255, a:1},
-    		graphtype: 'icicle',
-    		rotation: 0
-    	};
+      var ret = {
+        tree: val,
+        height: 500,
+        width: 960,
+        orientation: 'vertical',
+        style: [],
+        color: [{r:200, g:200, b:200, a:1}],
+        opacity: 1,
+        bcolor: {r:255, g:255, b:255, a:1},
+        graphtype: 'icicle',
+        rotation: 0
+      };
       if(typeof val !== "string" && (typeof val !== "object" || !val)){
         err = err.concat(error("Data must be a URL.", node.elts[0]));
       }
       resume([].concat(err), ret);
     })
-  }
+  };
   function width(node, options, resume) {
     let params = {
       op: "positive",
@@ -419,7 +419,7 @@ let translate = (function() {
     set(node, options, function (err, val) {
       resume([].concat(err), val);
     }, params);
-  }
+  };
   function height(node, options, resume) {
     let params = {
       op: "positive",
@@ -428,7 +428,7 @@ let translate = (function() {
     set(node, options, function (err, val) {
       resume([].concat(err), val);
     }, params);
-  }
+  };
   function horizontal(node, options, resume) {
     let params = {
       op: "default",
@@ -450,35 +450,35 @@ let translate = (function() {
     }, params);
   };
   function labels(node, options, resume) {
-  	var lab = [false, false, false];//labelling[0] is key, labelling [1] is value.
-  	visit(node.elts[1], options, function (err2, val2) {//parameter list
-  		if(typeof val2 === "string"){
-  			val2 = [val2];
-  		}
-  		if(!(val2 instanceof Array)){
-  			err2 = err2.concat(error("Argument be a string parameter or array thereof.", node.elts[1]));
-  		} else {
-  			val2.forEach(function (element, index, array) {
-  				if(element == "name" || element == "key"){
-  					lab[0] = true;
-  				} else if(element == "number" || element == "value"){
-  					lab[1] = true;
-  				} else if(element == "image" || element == "picture"){
-  					lab[2] = true;  					
-  				} else {
-  					err2 = err2.concat(error(element+" is not a valid label parameter, try name or value.", node.elts[1]));
-  				}
-  			});
-  		}
-	    let params = {
-	      op: "default",
-	      prop: "labelling",
-	      val: lab
-	    };
-	    set(node, options, function (err, val) {//graph
-	      resume([].concat(err), val);
-	    }, params);
-  	});
+    var lab = [false, false, false];//labelling[0] is key, labelling [1] is value.
+    visit(node.elts[1], options, function (err2, val2) {//parameter list
+      if(typeof val2 === "string"){
+        val2 = [val2];
+      }
+      if(!(val2 instanceof Array)){
+        err2 = err2.concat(error("Argument be a string parameter or array thereof.", node.elts[1]));
+      } else {
+        val2.forEach(function (element, index, array) {
+          if(element === "name" || element === "key"){
+            lab[0] = true;
+          } else if(element === "number" || element === "value"){
+            lab[1] = true;
+          } else if(element === "image" || element === "picture"){
+            lab[2] = true;            
+          } else {
+            err2 = err2.concat(error(element+" is not a valid label parameter, try name or value.", node.elts[1]));
+          }
+        });
+      }
+      let params = {
+        op: "default",
+        prop: "labelling",
+        val: lab
+      };
+      set(node, options, function (err, val) {//graph
+        resume([].concat(err), val);
+      }, params);
+    });
   };
   function zoom(node, options, resume) {
     let params = {
@@ -517,23 +517,23 @@ let translate = (function() {
     "red grey" : 'RdGy',
     "red yellow blue" : 'RdYlBu',
     "red yellow green" : 'RdYlGn',
-  }
+  };
   function color(node, options, resume) {//takes in array (colorbrewer or not) of hex values and the data object
-  	var ret = [];
+    var ret = [];
     visit(node.elts[1], options, function (err2, val2) {
       if(!(val2 instanceof Array)){
-      	var temp = colorcheck(val2);
-      	if(temp.err && temp.err.length){
-      		err2 = err2.concat(error(temp.err+".", node.elts[1]));
-      	}
-      	ret = ret.concat(temp);
+        var temp = colorcheck(val2);
+        if(temp.err && temp.err.length){
+          err2 = err2.concat(error(temp.err+".", node.elts[1]));
+        }
+        ret = ret.concat(temp);
       } else {
         val2.forEach(function (element, index, array){
-        	temp = colorcheck(element);
-        	if(temp.err && temp.err.length){
-      			err2 = err2.concat(error(temp.err+" at index "+index+".", node.elts[1]));
-      		}
-      		ret = ret.concat(temp);
+          temp = colorcheck(element);
+          if(temp.err && temp.err.length){
+            err2 = err2.concat(error(temp.err+" at index "+index+".", node.elts[1]));
+          }
+          ret = ret.concat(temp);
         });
       }
       //assuming no errors it's formatted correctly without further issue.
@@ -546,111 +546,111 @@ let translate = (function() {
         resume([].concat(err1).concat(err2), val1);
       }, params)
     });
-  }
+  };
   function colorcheck(val){
-  	var ret = {};
-  	if(typeof val === "string" && /^#[0-9A-F]{6}$/i.test(val)){//valid hex string.
-  		var temp = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(val);
-  		ret = {
-  			r: parseInt(temp[1], 16),
-  			g: parseInt(temp[2], 16),
-  			b: parseInt(temp[3], 16),
-  		};
-  	} else if(!isNaN(val.r) && !isNaN(val.g) && !isNaN(val.b)){
-  		ret = val;
-  	} else {
-  		ret.err = "Please provide a valid color";
-  	}
-  	return ret;
-  }
+    var ret = {};
+    if(typeof val === "string" && /^#[0-9A-F]{6}$/i.test(val)){//valid hex string.
+      var temp = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(val);
+      ret = {
+        r: parseInt(temp[1], 16),
+        g: parseInt(temp[2], 16),
+        b: parseInt(temp[3], 16),
+      };
+    } else if(!isNaN(val.r) && !isNaN(val.g) && !isNaN(val.b)){
+      ret = val;
+    } else {
+      ret.err = "Please provide a valid color";
+    }
+    return ret;
+  };
   function bcolor(node, options, resume) {
-  	visit(node.elts[1], options, function (err2, val2) {
-  		var ret = colorcheck(val2);
-  		if(ret.err && ret.err.length){
-  			err2 = err2.concat(error(ret.err+".", node.elts[1]));
-  		}
-  		if(isNaN(ret.a)){ret.a = 1;}
-  		let params = {
-  			op: "default",
-  			prop: "bcolor",
-  			val: ret
-  		};
+    visit(node.elts[1], options, function (err2, val2) {
+      var ret = colorcheck(val2);
+      if(ret.err && ret.err.length){
+        err2 = err2.concat(error(ret.err+".", node.elts[1]));
+      }
+      if(isNaN(ret.a)){ret.a = 1;}
+      let params = {
+        op: "default",
+        prop: "bcolor",
+        val: ret
+      };
       set(node, options, function (err1, val1) {
         resume([].concat(err1).concat(err2), val1);
       }, params)
-  	});
+    });
   };
   function leaf(node, options, resume) {
-  	var leaf = {
-  		parts: 'all',
-  		ranges: [],
-  		colors: []
-  	};
-  	visit(node.elts[2], options, function (err2, val2) {//ranges
-  		if(!(val2 instanceof Array)){
-  			err2 = err2.concat(error("Please provide a list of value ranges.", node.elts[2]));
-  		} else {
-  			val2.forEach(function (element, index, array){
-  				if(!element[0] || isNaN(element[0]) || !element[1] || isNaN(element[1])){
-  					err2 = err2.concat(error("Index "+index+" lacks valid range parameters.", node.elts[2]));
-  				}
-  			});
-  			leaf.ranges = leaf.ranges.concat(val2);
-  		}
-  		visit(node.elts[1], options, function (err3, val3) {//colors
-  			var ret = [];
-	      if(!(val3 instanceof Array)){
-	        err3 = err3.concat(error("Please provide an array or brewer color.", node.elts[1]));
-	      } else {
-	        val3.forEach(function (element, index, array){
-	        	var temp = colorcheck(element);
-	        	if(temp.err && temp.err.length){
-	      			err3 = err3.concat(error(temp.err+" at index "+index+".", node.elts[1]));
-	      		}
-	      		ret = ret.concat(temp);
-	        });
-	        leaf.colors = leaf.colors.concat(ret);
-	      }
-	      visit(node.elts[3], options, function (err4, val4){//text parameters
-	      	if(val4 === 'leaves' || val4 === 'leaf' || val4 === 'leafs'){
-	      		leaf.parts = 'leaf';
-	      	} else if(val4 === 'branch' || val4 === 'branches'){
-	      		leaf.parts = 'branch';
-	      	}
-	      	let params = {
-		  			op: "default",
-		  			prop: "leaf",
-		  			val: leaf
-		  		};
-		  		set(node, options, function (err1, val1) {//graph
-		        resume([].concat(err1).concat(err3).concat(err2).concat(err4), val1);
-		      }, params);
-	      });
-  		});
-  	});
+    var leaf = {
+      parts: 'all',
+      ranges: [],
+      colors: []
+    };
+    visit(node.elts[2], options, function (err2, val2) {//ranges
+      if(!(val2 instanceof Array)){
+        err2 = err2.concat(error("Please provide a list of value ranges.", node.elts[2]));
+      } else {
+        val2.forEach(function (element, index, array){
+          if(!element[0] || isNaN(element[0]) || !element[1] || isNaN(element[1])){
+            err2 = err2.concat(error("Index "+index+" lacks valid range parameters.", node.elts[2]));
+          }
+        });
+        leaf.ranges = leaf.ranges.concat(val2);
+      }
+      visit(node.elts[1], options, function (err3, val3) {//colors
+        var ret = [];
+        if(!(val3 instanceof Array)){
+          err3 = err3.concat(error("Please provide an array or brewer color.", node.elts[1]));
+        } else {
+          val3.forEach(function (element, index, array){
+            var temp = colorcheck(element);
+            if(temp.err && temp.err.length){
+              err3 = err3.concat(error(temp.err+" at index "+index+".", node.elts[1]));
+            }
+            ret = ret.concat(temp);
+          });
+          leaf.colors = leaf.colors.concat(ret);
+        }
+        visit(node.elts[3], options, function (err4, val4){//text parameters
+          if(val4 === 'leaves' || val4 === 'leaf' || val4 === 'leafs'){
+            leaf.parts = 'leaf';
+          } else if(val4 === 'branch' || val4 === 'branches'){
+            leaf.parts = 'branch';
+          }
+          let params = {
+            op: "default",
+            prop: "leaf",
+            val: leaf
+          };
+          set(node, options, function (err1, val1) {//graph
+            resume([].concat(err1).concat(err3).concat(err2).concat(err4), val1);
+          }, params);
+        });
+      });
+    });
   };
   function opacity(node, options, resume) {
-  	visit(node.elts[1], options, function (err2, val2) {
-  		if(isNaN(val2) || val2 < 0){
-  			err2 = err2.concat(error("Alpha must be a positive number.", node.elts[1]));
-  		} else {
-  			val2 = +val2;
-  			if(val2 > 1 && val2 < 100){
-  				val2 = val2/100;
-  			} else if (val2 > 100){
-  				val2 = 1;
-  			}
-  		}
-  		let params = {
-  			op: "default",
-  			prop: "opacity",
-  			val: val2
-  		};
-  		set(node, options, function (err1, val1) {
-  			resume([].concat(err1).concat(err2), val1);
-  		}, params);
-  	});
-  }
+    visit(node.elts[1], options, function (err2, val2) {
+      if(isNaN(val2) || val2 < 0){
+        err2 = err2.concat(error("Alpha must be a positive number.", node.elts[1]));
+      } else {
+        val2 = +val2;
+        if(val2 > 1 && val2 < 100){
+          val2 = val2/100;
+        } else if (val2 > 100){
+          val2 = 1;
+        }
+      }
+      let params = {
+        op: "default",
+        prop: "opacity",
+        val: val2
+      };
+      set(node, options, function (err1, val1) {
+        resume([].concat(err1).concat(err2), val1);
+      }, params);
+    });
+  };
   function brewer(node, options, resume) {//takes in color string, outputs array
     let ret = 0;
     visit(node.elts[0], options, function (err, val) {
@@ -664,31 +664,31 @@ let translate = (function() {
       }
       resume([].concat(err), ret);//finds the right name and then grabs the colorbrewer array
     });
-  }
+  };
   function rgba(node, options, resume){
-  	visit(node.elts[0], options, function (err1, val1) {//a
-  		if(isNaN(val1) || val1 < 0){
-  			err1 = err1.concat(error("Alpha must be a positive number.", node.elts[0]));
-  		} else {
+    visit(node.elts[0], options, function (err1, val1) {//a
+      if(isNaN(val1) || val1 < 0){
+        err1 = err1.concat(error("Alpha must be a positive number.", node.elts[0]));
+      } else {
         if(val1 > 1 && val1 < 100){
           val1 = val1/100;
         } else if (val1 > 100){
           val1 = 1;
         }
-  		}
-  		let test = node.elts.shift();
-  		rgb(node, options, function(err2, val2) {//run rgb, add alpha
-  			val2.a = val1
-  			node.elts.unshift(test);
-  			resume([].concat(err1).concat(err2), val2);
-  		});
-  	});
-  }
+      }
+      let test = node.elts.shift();
+      rgb(node, options, function(err2, val2) {//run rgb, add alpha
+        val2.a = val1
+        node.elts.unshift(test);
+        resume([].concat(err1).concat(err2), val2);
+      });
+    });
+  };
   function rgb(node, options, resume){
     let ret = {
-    	r: 0,
-    	g: 0,
-    	b: 0,
+      r: 0,
+      g: 0,
+      b: 0,
     };
     visit(node.elts[0], options, function (err1, val1) {//b
       if(isNaN(val1) || val1 < 0 || +val1 > 255){
@@ -709,7 +709,7 @@ let translate = (function() {
         });
       });
     });
-  }
+  };
   function gist(node, options, resume){
 
   };
@@ -757,22 +757,22 @@ let translate = (function() {
         }
       }
     });
-  }
+  };
   function sunburst(node, options, resume){
     icicle(node, options, function (err, val){
       val.graphtype = 'sunburst';//just overwrite this
       resume([].concat(err), val);
     });
-  }
+  };
   function rotate(node, options, resume) {
     visit(node.elts[1], options, function (err2, val2) {
       if(isNaN(val2)){
-      	if(val2 === 'free'){
-      	} else {
-        	err2 = err2.concat(error("Argument must be a number.", node.elts[1]));
-    	}
+        if(val2 === 'free'){
+        } else {
+          err2 = err2.concat(error("Argument must be a number.", node.elts[1]));
+      }
       } else {
-      	val2 = +val2;
+        val2 = +val2;
       }
       let params = {
         op: "default",
@@ -821,7 +821,7 @@ let translate = (function() {
       options = {};
     }
     visit(node.elts[0], options, resume);
-  }
+  };
   let table = {
     "PROG" : program,
     "EXPRS" : exprs,
@@ -852,7 +852,7 @@ let translate = (function() {
     "LEAF" : leaf,
     "OPACITY" : opacity,
     "GIST": gist,
-  }
+  };
   return translate;
 })();
 let render = (function() {
@@ -868,7 +868,7 @@ let render = (function() {
   function render(val, resume) {
     // Do some rendering here.
     resume([], val);
-  }
+  };
   return render;
 })();
 export let compiler = (function () {
