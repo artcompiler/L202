@@ -449,6 +449,16 @@ let translate = (function() {
       resume([].concat(err), val);
     }, params);
   };
+  function test(node, options, resume) {
+    let params = {
+      op: "default",
+      prop: "valuetype",
+      val: true,
+    };
+    set(node, options, function (err, val) {
+      resume([].concat(err), val);
+    }, params);
+  };
   function labels(node, options, resume) {
     var lab = [false, false, false];//labelling[0] is key, labelling [1] is value.
     visit(node.elts[1], options, function (err2, val2) {//parameter list
@@ -734,7 +744,7 @@ let translate = (function() {
 
             res.on('end', function() {
               var fin = JSON.parse(obj);
-              val.tree = fin;
+              val.tree = obj;
               if(fin){
                 if (fin.error && fin.error.length > 0) {
                   err = err.concat(error("Attempt to parse JSON returned" + fin.error, node.elts[0]));
@@ -852,6 +862,7 @@ let translate = (function() {
     "LEAF" : leaf,
     "OPACITY" : opacity,
     "GIST": gist,
+    "TEST": test,
   };
   return translate;
 })();

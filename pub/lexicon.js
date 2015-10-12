@@ -27,5 +27,6 @@ exports.globalLexicon = {
     "brewer" : { "tk": 0x01, "name": "BREWER", "cls": "function", "length": 1, "arity": 1},
     "highlight" : { "tk": 0x01, "name": "LEAF", "cls": "function", "length": 4, "arity": 4},
     "fill-opacity" : { "tk": 0x01, "name": "OPACITY", "cls": "function", "length": 2, "arity": 2},
-    "gist" : { "tk": 0x01, "name": "GIST", "cls": "function", "length": 2, "arity": 2},     
+    "gist" : { "tk": 0x01, "name": "GIST", "cls": "function", "length": 2, "arity": 2},
+    "ignorevalues" : { "tk": 0x01, "name": "TEST", "cls": "function", "length": 1, "arity": 1},     
 }

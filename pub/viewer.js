@@ -18,7 +18,8 @@ window.exports.viewer = (function () {
       }//edge case for a single object because the parser likes to unwrap arrays.
     }
     obj.data.forEach(function (element, index, array) {
-      if (typeof element === "object" && element.tree && typeof element.tree === "object") {
+      if (typeof element === "object" && element.tree && typeof element.tree === "string") {
+        element.tree = JSON.parse(element.tree);
         graphs = element;
       }
     });
@@ -81,7 +82,7 @@ window.exports.viewer = (function () {
             temp.value = element;//technically works even if it's, say, an index of numbers (in which case they'll be leaves)
             ch.push(temp);
           });
-        } else if(isNaN(d.value)){//not an array, object, or number
+        } else if(isNaN(d.value) || (graphs.valuetype && d.value !== 1)){//not an array, object, or number
           ch = [{
             key: d.value,
             value: 1,
@@ -378,12 +379,6 @@ window.exports.viewer = (function () {
         });
       if(graphs.zoom){
         function click(d) {
-          if(text){
-            text.transition().attr("opacity", 0);
-          }
-          if(img){
-            img.transition().style("opacity", 0);
-          }
           function tw(d){
             var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
                 yd = d3.interpolate(y.domain(), [d.y, 1]),
@@ -515,8 +510,8 @@ window.exports.viewer = (function () {
       .attr("height", graphs.height);
   }
   function capture(el) {
-    var mySVG = $(el).html();
-    return mySVG;
+    //var mySVG = $(el).html();
+    return null;//mySVG;
   }
   return {
     update: update,
