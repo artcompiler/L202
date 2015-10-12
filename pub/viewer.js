@@ -82,7 +82,7 @@ window.exports.viewer = (function () {
             temp.value = element;//technically works even if it's, say, an index of numbers (in which case they'll be leaves)
             ch.push(temp);
           });
-        } else if(isNaN(d.value) || (graphs.valuetype && d.value !== 1)){//not an array, object, or number
+        } else if(d.value !== 1){//not an array, object, or number
           ch = [{
             key: d.value,
             value: 1,
