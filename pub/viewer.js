@@ -23,6 +23,14 @@ window.exports.viewer = (function () {
         graphs = element;
       }
     });
+    if(!graphs.height){
+      graphs.height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+      graphs.height -= 100;
+    }
+    if(!graphs.width){
+      graphs.width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+      graphs.width -= 20;
+    }
     //partition looks for children arrays starting from root and positions and scales based on number of children and their values.
     var svgd = d3.select(el)
     svgd.selectAll("g")

@@ -395,8 +395,6 @@ let translate = (function() {
     visit(node.elts[0], options, function (err, val) {
       var ret = {
         tree: val,
-        height: 500,
-        width: 960,
         orientation: 'vertical',
         style: [],
         color: [{r:200, g:200, b:200, a:1}],
