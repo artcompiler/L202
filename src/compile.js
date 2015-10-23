@@ -397,7 +397,7 @@ let translate = (function() {
         tree: val,
         orientation: 'vertical',
         style: [],
-        color: [{r:200, g:200, b:200, a:1}],
+        color: [{r:200, g:200, b:200}],
         opacity: 1,
         bcolor: {r:255, g:255, b:255, a:1},
         graphtype: 'icicle',
@@ -462,9 +462,9 @@ let translate = (function() {
           } else if(element === "number" || element === "value"){
             lab[1] = true;
           } else if(element === "image" || element === "picture"){
-            lab[2] = true;            
+            lab[2] = true;
           } else {
-            err2 = err2.concat(error(element+" is not a valid label parameter, try name or value.", node.elts[1]));
+            err2 = err2.concat(error(''+element+" is not a valid label parameter, try name or value.", node.elts[1]));
           }
         });
       }
@@ -474,7 +474,7 @@ let translate = (function() {
         val: lab
       };
       set(node, options, function (err, val) {//graph
-        resume([].concat(err), val);
+        resume([].concat(err).concat(err2), val);
       }, params);
     });
   };
@@ -515,6 +515,10 @@ let translate = (function() {
     "red grey" : 'RdGy',
     "red yellow blue" : 'RdYlBu',
     "red yellow green" : 'RdYlGn',
+    "spectral" : 'Spectral',
+    "dark" : 'Dark2',
+    "pastel" : 'Pastel1',
+    "accent" : 'Accent',
   };
   function color(node, options, resume) {//takes in array (colorbrewer or not) of hex values and the data object
     var ret = [];
@@ -526,6 +530,9 @@ let translate = (function() {
         }
         ret = ret.concat(temp);
       } else {
+        if(!val2.length){
+          err2 = err2.concat(error("Array is empty.", node.elts[1]));
+        }
         val2.forEach(function (element, index, array){
           temp = colorcheck(element);
           if(temp.err && temp.err.length){
@@ -589,7 +596,7 @@ let translate = (function() {
         err2 = err2.concat(error("Please provide a list of value ranges.", node.elts[2]));
       } else {
         val2.forEach(function (element, index, array){
-          if(!element[0] || isNaN(element[0]) || !element[1] || isNaN(element[1])){
+          if(!element[0] || isNaN(element[0]) || !element[1] || isNaN(element[1]) || element[0] > element[1]){
             err2 = err2.concat(error("Index "+index+" lacks valid range parameters.", node.elts[2]));
           }
         });
@@ -614,6 +621,15 @@ let translate = (function() {
             leaf.parts = 'leaf';
           } else if(val4 === 'branch' || val4 === 'branches'){
             leaf.parts = 'branch';
+          } else if(val4 !== 'all') {
+            err4 = err4.concat(error("Invalid keyword.", node.elts[3]));
+          }
+          if(leaf.ranges.length !== leaf.colors.length){
+            if(leaf.ranges.length > leaf.colors.length){
+              err3 = err3.concat(error("Not enough colors for given ranges.", node.elts[1]));
+            } else {
+              err2 = err2.concat(error("Not enough ranges for given colors.", node.elts[2]));
+            }
           }
           let params = {
             op: "default",
