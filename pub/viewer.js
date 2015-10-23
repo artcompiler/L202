@@ -518,8 +518,8 @@ window.exports.viewer = (function () {
       .attr("height", graphs.height);
   }
   function capture(el) {
-    //var mySVG = $(el).html();
-    return null;//mySVG;
+    var mySVG = $(el).html();
+    return mySVG;
   }
   return {
     update: update,
