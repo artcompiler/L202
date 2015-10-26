@@ -371,6 +371,7 @@ let translate = (function() {
     visit(node.elts[0], options, function (err, val) {
       if(typeof val !== "object" || !val || !val.tree){
         err = err.concat(error("Argument Data invalid.", node.elts[0]));
+        resume([].concat(err), val);
       } else {
         if(params.op && params.op === "default"){
           val[params.prop] = params.val;
