@@ -731,6 +731,7 @@ let translate = (function() {
     visit(node.elts[0], options, function (err, val) {
       if(typeof val !== "object" || !val || !val.tree){
         err = err.concat(error("Argument Data invalid.", node.elts[0]));
+        resume([].concat(err), val);
       } else {//have to make sure it's an object before you start assigning properties.
         if(typeof val.tree === "string"){
           let protocol;
@@ -752,16 +753,16 @@ let translate = (function() {
               }
               catch(e){
                 err = err.concat(error("Attempt to parse JSON returned " + e, node.elts[0]));
-              }
-              console.log(err);
-              val.tree = obj;
-              if(fin){
-                if (fin.error && fin.error.length > 0) {
-                  err = err.concat(error("Attempt to parse JSON returned " + fin.error, node.elts[0]));
+              } finally {
+                val.tree = obj;
+                if(fin){
+                  if (fin.error && fin.error.length > 0) {
+                    err = err.concat(error("Attempt to parse JSON returned " + fin.error, node.elts[0]));
+                  }
                 }
+                val.graphtype = 'icicle';
+                resume([].concat(err), val);
               }
-              val.graphtype = 'icicle';
-              resume([].concat(err), val);
             });
           }).on('error', function(e) {
             err = err.concat(error("Attempt to get data returned " + e, node.elts[0]));
@@ -780,7 +781,7 @@ let translate = (function() {
   };
   function sunburst(node, options, resume){
     icicle(node, options, function (err, val){
-      val.graphtype = 'sunburst';//just overwrite this
+      if(!err.length){val.graphtype = 'sunburst';}//just overwrite this
       resume([].concat(err), val);
     });
   };
