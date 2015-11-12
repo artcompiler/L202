@@ -401,15 +401,153 @@ let translate = (function() {
         color: [{r:200, g:200, b:200}],
         opacity: 1,
         bcolor: {r:255, g:255, b:255, a:1},
-        graphtype: 'icicle',
         rotation: 0
       };
-      if(typeof val !== "string" && (typeof val !== "object" || !val)){
-        err = err.concat(error("Data must be a URL.", node.elts[0]));
+      if(typeof val !== "object" || !val){
+        err = err.concat(error("Data must be a valid object.", node.elts[0]));
+      } if(val instanceof Array && typeof val[0].key === "string" && typeof val[0].val !== "undefined"){
+        ret.tree = recordToJSON(val);
       }
       resume([].concat(err), ret);
     })
   };
+  function recordToJSON(val){
+    var ret = val;
+    if(val instanceof Array && typeof val[0].key === "string" && typeof val[0].val !== "undefined"){
+      ret = {};
+      val.forEach(function (element, index) {//each key/value pair
+        ret[element.key] = recordToJSON(element.val);//if it's an object itself
+      });
+    } else if(val instanceof Array){
+      ret = [];
+      val.forEach(function (element) {
+        console.log(element);
+        ret.push(isNaN(element) ? element : +element);
+      });
+    } else if(!isNaN(val)){
+      ret = +val;
+    }
+    return ret;
+  };
+  function gist(node, options, resume){
+	  visit(node.elts[0], options, function (err, val) {
+      if(typeof val !== "string"){
+        err = err.concat(error("Input must be a URL.", node.elts[0]));
+      } else {
+        let protocol;
+        if (val.indexOf("https") >= 0){
+          protocol = https;
+        } else {
+          protocol = http;
+        }
+        protocol.get(val, function(res) {
+          var obj = '';
+
+          res.on('data', function(d) {
+            obj += d;
+          });
+
+          res.on('end', function() {
+            try {
+              var fin = JSON.parse(obj);
+            } catch(e){
+              err = err.concat(error("Attempt to parse JSON returned " + e, node.elts[0]));
+            } finally {
+              val = obj;
+              if(fin){
+                val = fin;
+                if (fin.error && fin.error.length > 0) {
+                  err = err.concat(error("Attempt to parse JSON returned " + fin.error, node.elts[0]));
+                }
+              }
+              resume([].concat(err), val);
+            }
+          });
+        }).on('error', function(e) {
+          err = err.concat(error("Attempt to get data returned " + e, node.elts[0]));
+          resume([].concat(err), val);
+        });
+      }
+	  })
+  };
+  function icicle(node, options, resume) {
+    let params = {
+      op: "default",
+      prop: "graphtype",
+      val: "icicle"
+    };
+    set(node, options, function (err, val) {
+      resume([].concat(err), val);
+    }, params);
+  };
+  function sunburst(node, options, resume) {
+    let params = {
+      op: "default",
+      prop: "graphtype",
+      val: "sunburst"
+    };
+    set(node, options, function (err, val) {
+      resume([].concat(err), val);
+    }, params);
+  };
+  /*function icicle(node, options, resume){
+    visit(node.elts[0], options, function (err, val) {
+      if(typeof val !== "object" || !val || !val.tree){
+        err = err.concat(error("Argument Data invalid.", node.elts[0]));
+        resume([].concat(err), val);
+      } else {//have to make sure it's an object before you start assigning properties.
+        if(typeof val.tree === "string"){
+          let protocol;
+          if (val.tree.indexOf("https") >= 0) {
+            protocol = https;
+          } else {
+            protocol = http;
+          }
+          protocol.get(val.tree, function(res) {
+            var obj = '';
+
+            res.on('data', function(d) {
+              obj += d;
+            });
+
+            res.on('end', function() {
+              try {
+                var fin = JSON.parse(obj);
+              }
+              catch(e){
+                err = err.concat(error("Attempt to parse JSON returned " + e, node.elts[0]));
+              } finally {
+                val.tree = obj;
+                if(fin){
+                  if (fin.error && fin.error.length > 0) {
+                    err = err.concat(error("Attempt to parse JSON returned " + fin.error, node.elts[0]));
+                  }
+                }
+                val.graphtype = 'icicle';
+                resume([].concat(err), val);
+              }
+            });
+          }).on('error', function(e) {
+            err = err.concat(error("Attempt to get data returned " + e, node.elts[0]));
+            resume([].concat(err), val);
+          });
+        } else {
+          if(typeof val.tree !== "object") {
+            err = err.concat(error("Data is not a tree.", node.elts[0]));
+          } else {
+            val.graphtype = 'icicle';
+          }
+          resume([].concat(err), val);
+        }
+      }
+    });
+  };
+  function sunburst(node, options, resume){
+    icicle(node, options, function (err, val){
+      if(!err.length){val.graphtype = 'sunburst';}//just overwrite this
+      resume([].concat(err), val);
+    });
+  };*/
   function width(node, options, resume) {
     let params = {
       op: "positive",
@@ -723,67 +861,6 @@ let translate = (function() {
           resume([].concat(err1).concat(err2).concat(err3), ret);
         });
       });
-    });
-  };
-  function gist(node, options, resume){
-
-  };
-  function icicle(node, options, resume){
-    visit(node.elts[0], options, function (err, val) {
-      if(typeof val !== "object" || !val || !val.tree){
-        err = err.concat(error("Argument Data invalid.", node.elts[0]));
-        resume([].concat(err), val);
-      } else {//have to make sure it's an object before you start assigning properties.
-        if(typeof val.tree === "string"){
-          let protocol;
-          if (val.tree.indexOf("https") >= 0) {
-            protocol = https;
-          } else {
-            protocol = http;
-          }
-          protocol.get(val.tree, function(res) {
-            var obj = '';
-
-            res.on('data', function(d) {
-              obj += d;
-            });
-
-            res.on('end', function() {
-              try {
-                var fin = JSON.parse(obj);
-              }
-              catch(e){
-                err = err.concat(error("Attempt to parse JSON returned " + e, node.elts[0]));
-              } finally {
-                val.tree = obj;
-                if(fin){
-                  if (fin.error && fin.error.length > 0) {
-                    err = err.concat(error("Attempt to parse JSON returned " + fin.error, node.elts[0]));
-                  }
-                }
-                val.graphtype = 'icicle';
-                resume([].concat(err), val);
-              }
-            });
-          }).on('error', function(e) {
-            err = err.concat(error("Attempt to get data returned " + e, node.elts[0]));
-            resume([].concat(err), val);
-          });
-        } else {
-          if(typeof val.tree !== "object") {
-            err = err.concat(error("Data is not a tree.", node.elts[0]));
-          } else {
-            val.graphtype = 'icicle';
-          }
-          resume([].concat(err), val);
-        }
-      }
-    });
-  };
-  function sunburst(node, options, resume){
-    icicle(node, options, function (err, val){
-      if(!err.length){val.graphtype = 'sunburst';}//just overwrite this
-      resume([].concat(err), val);
     });
   };
   function rotate(node, options, resume) {

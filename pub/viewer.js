@@ -18,8 +18,8 @@ window.exports.viewer = (function () {
       }//edge case for a single object because the parser likes to unwrap arrays.
     }
     obj.data.forEach(function (element, index, array) {
-      if (typeof element === "object" && element.tree && typeof element.tree === "string") {
-        element.tree = JSON.parse(element.tree);
+      if (typeof element === "object" && element.tree && typeof element.tree === "object") {
+        //element.tree = JSON.parse(element.tree);
         graphs = element;
       }
     });
