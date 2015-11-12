@@ -394,8 +394,7 @@ let translate = (function() {
   };
   function data(node, options, resume) {
     visit(node.elts[0], options, function (err, val) {
-      var ret = {
-        tree: val,
+      let ret = {
         orientation: 'vertical',
         style: [],
         color: [{r:200, g:200, b:200}],
@@ -403,11 +402,21 @@ let translate = (function() {
         bcolor: {r:255, g:255, b:255, a:1},
         rotation: 0
       };
-      if(typeof val !== "object" || !val){
+      if(typeof val === "object" && val){
+        ret.tree = val;
+      } else if(typeof val === "string"){
+        gist(node, options, function (err2, val2){
+          ret.tree = val2;
+          err = err.concat(err2);
+          resume([].concat(err), ret);
+        });
+        return;
+      } else {
         err = err.concat(error("Data must be a valid object.", node.elts[0]));
-      } if(val instanceof Array && typeof val[0].key === "string" && typeof val[0].val !== "undefined"){
-        ret.tree = recordToJSON(val);
       }
+      if(val instanceof Array && typeof val[0].key === "string" && typeof val[0].val !== "undefined"){
+        ret.tree = recordToJSON(val);
+      } 
       resume([].concat(err), ret);
     })
   };
