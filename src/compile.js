@@ -315,7 +315,6 @@ messages[1004] = "No visitor method defined for '%1'.";
 let translate = (function() {
   let nodePool;
   function translate(pool, resume) {
-    console.log("pool=" + JSON.stringify(pool, null, 2));
     nodePool = pool;
     return visit(pool.root, {}, resume);
   };
@@ -430,7 +429,6 @@ let translate = (function() {
     } else if(val instanceof Array){
       ret = [];
       val.forEach(function (element) {
-        console.log(element);
         ret.push(isNaN(element) ? element : +element);
       });
     } else if(!isNaN(val)){
