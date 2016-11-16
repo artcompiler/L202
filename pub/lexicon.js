@@ -1,4 +1,4 @@
-exports.globalLexicon = {
+window.gcexports.globalLexicon = {
     "let" : { "tk": 0x12, "cls": "keyword" },
     "if" : { "tk": 0x05, "cls": "keyword" },
     "then" : { "tk": 0x06, "cls": "keyword" },

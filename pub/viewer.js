@@ -4,7 +4,7 @@
 // This product includes color specifications and designs developed by Cynthia Brewer (http://colorbrewer.org/).
 
 
-window.exports.viewer = (function () {
+window.gcexports.viewer = (function () {
   function update(el, obj, src, pool) {
     obj = JSON.parse(obj);
     var str;
